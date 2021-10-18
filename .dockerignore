@@ -1,0 +1,12 @@
+.github
+.git
+.gitignore
+venv
+.venv
+README.md
+mypy.ini
+.editorconfig
+.coveragerc
+.vscode
+.idea
+db.sqlite3
