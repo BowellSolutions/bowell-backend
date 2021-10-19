@@ -51,6 +51,7 @@ INSTALLED_APPS = [
 
     # apps
     'users',
+    'core',
 ]
 
 MIDDLEWARE = [

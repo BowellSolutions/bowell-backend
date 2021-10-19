@@ -31,3 +31,6 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+CELERY_BROKER_URL = 'redis://redis_db:6379'
+CELERY_RESULT_BACKEND = 'redis://redis_db:6379'

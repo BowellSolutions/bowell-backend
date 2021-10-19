@@ -30,6 +30,17 @@ services:
     ports:
       - "5432:5432"
 
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    depends_on:
+      - postgres_db
+    ports:
+      - "5051:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PG_ADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PG_ADMIN_PASSWORD}
+
   redis_db:
     container_name: redis_db
     image: redis:alpine
@@ -39,7 +50,22 @@ services:
     ports:
       - "6379:6379"
 
-# to do celery containers
+  celery:
+    container_name: celery
+    build:
+      context: .
+      dockerfile: Dockerfile.Celery
+    command: >
+      sh -c "python manage.py wait_for_db &&
+             celery -A core worker -l INFO"
+    environment:
+      - DJANGO_SETTINGS_MODULE=core.settings.dev
+    volumes:
+      - .:/app/
+    depends_on:
+      - backend
+      - redis_db
+      - postgres_db
 
 volumes:
   postgres-data:
