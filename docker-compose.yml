@@ -13,7 +13,7 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=core.settings.dev
     depends_on:
-      - db
+      - postgres_db
     links:
       - redis_db
 
