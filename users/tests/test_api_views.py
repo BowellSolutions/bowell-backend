@@ -5,6 +5,8 @@ from rest_framework.status import (
 )
 from rest_framework.test import APIClient
 
+from users.utils import get_tokens_for_user
+
 
 class TestUsersViews(TestCase):
     def setUp(self) -> None:
@@ -12,7 +14,16 @@ class TestUsersViews(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
+        # noinspection PyUnresolvedReferences
         cls.user = User.objects.create_user(username='test', password='testing123')
+
+    def _require_jwt_cookies(self, user: User) -> None:
+        """Client will attach valid JWT Cookies"""
+        access, refresh = get_tokens_for_user(user=user)
+        self.client.cookies.load({
+            'access': access,
+            'refresh': refresh,
+        })
 
     def test_obtain_jwt(self):
         response = self.client.post('/api/auth/token/', {
@@ -97,3 +108,28 @@ class TestUsersViews(TestCase):
         })
         self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.json(), {'detail': 'Token is invalid or expired', 'code': 'token_not_valid'})
+
+    def test_logout(self):
+        self._require_jwt_cookies(user=self.user)
+        response = self.client.get('/api/auth/logout/')
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertEqual(response.json(), {'message': 'Logout successful!'})
+
+    def test_logout_cookies_not_found(self):
+        response = self.client.get('/api/auth/logout/')
+        self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            response.json(),
+            {'message': "Could not logout! Cookies 'access'/'refresh' not found in request!"}
+        )
+
+    # later test it on a real view, remove test view and its route
+    def test_auth_view(self):
+        self._require_jwt_cookies(user=self.user)
+        response = self.client.post('/api/auth/test/', {})
+        self.assertEqual(response.status_code, HTTP_200_OK)
+
+    def test_auth_view_without_cookies_and_headers(self):
+        response = self.client.post('/api/auth/test/', {})
+        self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.json(), {'detail': 'Authentication credentials were not provided.'})
