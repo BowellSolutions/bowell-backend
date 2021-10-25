@@ -4,6 +4,7 @@ from rest_framework.status import (
     HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
 )
 from rest_framework.test import APIClient
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
 
 from users.utils import get_tokens_for_user
 
@@ -50,21 +51,24 @@ class TestUsersViews(TestCase):
         self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.json(), {'detail': 'No active account found with the given credentials'})
 
-    def test_refresh_jwt(self):
-        res_get_token = self.client.post('/api/auth/token/', data={
-            'username': 'test',
-            'password': 'testing123',
-        }).json()
-        access, refresh = res_get_token['access'], res_get_token['refresh']
-
+    def test_refresh_jwt_refresh_in_request(self):
+        access, refresh = get_tokens_for_user(self.user)
         res_refresh_token = self.client.post('/api/auth/token/refresh/', data={
             'refresh': refresh
         })
+        refresh_data = res_refresh_token.json()
         self.assertEqual(res_refresh_token.status_code, HTTP_200_OK)
+        self.assertIn('access', refresh_data)
+        self.assertNotEqual(access, refresh_data['access'])
 
-        data = res_refresh_token.json()
-        self.assertIn('access', data)
-        self.assertNotEqual(access, data['access'])
+    def test_refresh_jwt_refresh_in_cookie(self):
+        self._require_jwt_cookies(self.user)
+        prev_access = self.client.cookies['access']
+        res_refresh_token = self.client.post('/api/auth/token/refresh/', data={})
+        refresh_data = res_refresh_token.json()
+        self.assertEqual(res_refresh_token.status_code, HTTP_200_OK)
+        self.assertIn('access', refresh_data)
+        self.assertNotEqual(prev_access, refresh_data['access'])
 
     def test_refresh_jwt_missing_fields(self):
         response = self.client.post('/api/auth/token/refresh/', {})
@@ -78,13 +82,8 @@ class TestUsersViews(TestCase):
         self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.json(), {'detail': 'Token is invalid or expired', 'code': 'token_not_valid'})
 
-    def test_verify_jwt(self):
-        res_get_token = self.client.post('/api/auth/token/', data={
-            'username': 'test',
-            'password': 'testing123',
-        }).json()
-        access, refresh = res_get_token['access'], res_get_token['refresh']
-
+    def test_verify_jwt_token_in_request(self):
+        access, refresh = get_tokens_for_user(self.user)
         res_verify_access = self.client.post('/api/auth/token/verify/', {
             'token': access
         })
@@ -97,7 +96,12 @@ class TestUsersViews(TestCase):
         self.assertEqual(res_verify_refresh.status_code, HTTP_200_OK)
         self.assertEqual(res_verify_refresh.json(), {})
 
-    def test_verify_jwt_missing_fields(self):
+    def test_verify_jwt_token_in_cookie(self):
+        self._require_jwt_cookies(user=self.user)
+        response = self.client.post('/api/auth/token/verify/', {})
+        self.assertEqual(response.status_code, HTTP_200_OK)
+
+    def test_verify_jwt_no_token_in_data_nor_cookies(self):
         response = self.client.post('/api/auth/token/verify/', {})
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json(), {'token': ['This field is required.']})
@@ -109,10 +113,20 @@ class TestUsersViews(TestCase):
         self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.json(), {'detail': 'Token is invalid or expired', 'code': 'token_not_valid'})
 
+    def test_verify_jwt_invalid_token_in_cookie(self):
+        self.client.cookies.load({
+            'access': 'blablabla'
+        })
+        response = self.client.post('/api/auth/token/verify/', {})
+        self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.json(), {'detail': 'Token is invalid or expired', 'code': 'token_not_valid'})
+
     def test_logout(self):
         self._require_jwt_cookies(user=self.user)
+        self.assertEqual(BlacklistedToken.objects.all().count(), 0)
         response = self.client.get('/api/auth/logout/')
         self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertEqual(BlacklistedToken.objects.all().count(), 1)
         self.assertEqual(response.json(), {'message': 'Logout successful!'})
 
     def test_logout_cookies_not_found(self):
@@ -120,7 +134,7 @@ class TestUsersViews(TestCase):
         self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
         self.assertEqual(
             response.json(),
-            {'message': "Could not logout! Cookies 'access'/'refresh' not found in request!"}
+            {'message': "Could not logout! Cookie 'refresh' not found in request!"}
         )
 
     # later test it on a real view, remove test view and its route
