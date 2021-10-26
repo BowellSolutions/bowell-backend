@@ -1,4 +1,6 @@
 from django.conf import settings
+from django.contrib.auth.models import User
+from rest_framework import viewsets, mixins
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -11,7 +13,10 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView, TokenRefreshView, TokenVerifyView
 )
 
-from users.serializers import CookieTokenRefreshSerializer, CookieTokenVerifySerializer
+from users.serializers import (
+    CookieTokenRefreshSerializer, CookieTokenVerifySerializer, UserSerializer,
+    RegisterUserSerializer, UpdateUserSerializer
+)
 
 
 class JWTObtainPairView(TokenObtainPairView):
@@ -115,11 +120,33 @@ class JWTLogoutView(APIView):
         )
 
 
-class TestView(APIView):
+# to do later (handle object permissions, registration, updating fields, tests)
+class UserViewSet(viewsets.ModelViewSet):
+    """
+    GET     /api/users/          - list all users
+    POST    /api/users/          - register new user
+    GET     /api/users/<int:id>/ - retrieve user
+    PUT     /api/users/<int:id>/ - update user
+    PATCH   /api/users/<int:id>/ - partially update user
+    DELETE  /api/users/<int:id>/ - delete user
+    """
     permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
 
-    def post(self, request, *args, **kwargs):
-        return Response({}, 200)
+    def get_serializer_class(self):
+        if hasattr(self, 'action') and self.action == 'create':
+            return RegisterUserSerializer
+        elif hasattr(self, 'action') and self.action == 'update':
+            return UpdateUserSerializer
+        return super().get_serializer_class()
 
-    def get(self, *args, **kwargs):
-        return Response({}, 200)
+
+class GetCurrentUser(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    """GET /api/users/me/"""
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+
+    def get_object(self):
+        return self.request.user

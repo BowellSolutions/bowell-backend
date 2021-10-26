@@ -6,6 +6,7 @@ from rest_framework.status import (
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
 
+from users.serializers import UserSerializer
 from users.utils import get_tokens_for_user
 
 
@@ -137,13 +138,36 @@ class TestUsersViews(TestCase):
             {'message': "Could not logout! Cookie 'refresh' not found in request!"}
         )
 
-    # later test it on a real view, remove test view and its route
-    def test_auth_view(self):
+    def test_get_current_user(self):
         self._require_jwt_cookies(user=self.user)
-        response = self.client.post('/api/auth/test/', {})
+        response = self.client.get('/api/users/me/', {})
         self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertEqual(response.json(), UserSerializer(self.user).data)
 
-    def test_auth_view_without_cookies_and_headers(self):
-        response = self.client.post('/api/auth/test/', {})
+    def test_get_current_user_without_cookies_and_headers(self):
+        response = self.client.get('/api/users/me/', {})
         self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.json(), {'detail': 'Authentication credentials were not provided.'})
+
+    def test_get_current_user_invalid_token(self):
+        self.client.cookies.load({
+            'access': 'qwerty1234567890'
+        })
+        response = self.client.get('/api/users/me/', {})
+        self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            response.json(),
+            {
+                'detail': 'Given token not valid for any token type',
+                'code': 'token_not_valid',
+                'messages': [
+                    {
+                        'token_class': 'AccessToken',
+                        'token_type': 'access',
+                        'message': 'Token is invalid or expired'
+                    }
+                ]
+            }
+        )
+
+    # to do: test UserViewSet
