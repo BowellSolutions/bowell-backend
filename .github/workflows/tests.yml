@@ -2,8 +2,6 @@ name: Backend Unit Tests
 
 on:
   push:
-    branches:
-      - '*'
 
   pull_request:
     branches:
