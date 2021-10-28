@@ -2,6 +2,7 @@
     <h1>Bowell Backend</h1>
     <img src="https://img.shields.io/badge/Python-14354C?style=for-the-badge&logo=python&logoColor=white" alt=""/>
     <img src="https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white" alt=""/>
+    <img src="https://img.shields.io/badge/DJANGO-REST-ff1709?style=for-the-badge&logo=django&logoColor=white&color=ff1709&labelColor=gray" alt=""/>
     <img src="https://img.shields.io/badge/Celery-8C9A41?&style=for-the-badge&logo=celery&logoColor=Awhite" alt=""/>
     <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt=""/>
     <img src="https://img.shields.io/badge/redis-%23DD0031.svg?&style=for-the-badge&logo=redis&logoColor=white" alt=""/>
@@ -22,7 +23,7 @@ This setup has been tested with Python 3.9.
 - `daphne` - production asgi server
 - `whitenoise` - building static files for production
 - `celery` - task queue
-- ...
+- `drf-yasg` - OpenAPI documentation
 
 ## Development setup:
 Environmental variables in .env (random values below)

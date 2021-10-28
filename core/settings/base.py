@@ -51,7 +51,8 @@ INSTALLED_APPS = [
     # rest framework
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
-
+    # documentation
+    'drf_yasg',
     # apps
     'users',
     'core',
@@ -188,3 +189,17 @@ STATIC_ROOT = os.path.join(BASE_DIR.parent, 'staticfiles')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# OpenAPI documentation
+# https://drf-yasg.readthedocs.io/en/stable/settings.html
+
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+        }
+    }
+}
