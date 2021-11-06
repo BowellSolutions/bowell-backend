@@ -1,6 +1,7 @@
-from django.urls import path
-from .views import RecordingUploadViewSet
+from rest_framework.routers import SimpleRouter
+from .views import RecordingViewSet
 
-urlpatterns = [
-    path('recordings/upload', RecordingUploadViewSet.as_view({'put': 'create'}))
-]
+router = SimpleRouter()
+router.register(r'recordings', RecordingViewSet, basename='Recording')
+
+urlpatterns = router.urls

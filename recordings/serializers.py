@@ -4,7 +4,8 @@ from .models import Recording
 
 class RecordingSerializer(serializers.ModelSerializer):
     file = serializers.FileField()
+    uploaded_by = serializers.PrimaryKeyRelatedField(read_only=True, default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Recording
-        fields = ('file', 'name',)
+        fields = ('file', 'name', 'uploaded_by')
