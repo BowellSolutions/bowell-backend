@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework.status import (
     HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
@@ -8,6 +8,8 @@ from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
 
 from users.serializers import UserSerializer
 from users.utils import get_tokens_for_user
+
+User = get_user_model()
 
 
 class TestUsersViews(TestCase):
@@ -19,7 +21,7 @@ class TestUsersViews(TestCase):
         # noinspection PyUnresolvedReferences
         cls.user = User.objects.create_user(username='test', password='testing123')
 
-    def _require_jwt_cookies(self, user: User) -> None:
+    def _require_jwt_cookies(self, user) -> None:
         """Client will attach valid JWT Cookies"""
         access, refresh = get_tokens_for_user(user=user)
         self.client.cookies.load({
