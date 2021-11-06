@@ -138,4 +138,5 @@ dmypy.json
 
 # Django migrations
 
-*/migrations
+*/migrations/*
+!*/migrations/__init__.py
