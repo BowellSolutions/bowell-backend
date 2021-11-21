@@ -12,14 +12,14 @@ def auto_str(cls):
     return cls
 
 
-@auto_str  # can be deleted in prod?
+@auto_str
 class Recording(models.Model):
-    file = models.FileField(upload_to='recordings')  # dopytac sie adama
+    file = models.FileField(upload_to='recordings')
     name = models.CharField(max_length=255)
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    latest_analysis_date = models.DateTimeField(auto_now=True, blank=True, null=True)  # must be called explicitly (czy tu czy w examination)
+    latest_analysis_date = models.DateTimeField(auto_now=True, blank=True, null=True)
     # main results
-    recording_length = models.DurationField()
+    length = models.DurationField(blank=True, null=True)
     bowell_sounds_number = models.PositiveIntegerField(blank=True, null=True)
     bowell_sounds_per_minute = models.FloatField(blank=True, null=True)
     # frequency analysis in three-minute periods
@@ -46,14 +46,7 @@ class Recording(models.Model):
     rmssd_logarithm = models.FloatField(blank=True, null=True)
     sdnn = models.FloatField(blank=True, null=True)
     # Sound analysis total
-    sound_index = models.FloatField(blank=True, null=True)  # nie ma pewnosci
+    sound_index = models.FloatField(blank=True, null=True)
     # sound analysis per minute
     # technical details
-    similarity_to_training_set = models.FloatField(blank=True, null=True)  # co z procentami?
-    #status tutaj czy w badaniu?
-
-'''uploaded_by = models.ForeignKey(
-        to=settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True
-    )'''
+    similarity_to_training_set = models.FloatField(blank=True, null=True)

@@ -8,4 +8,4 @@ class RecordingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recording
-        fields = ('file', 'name', 'uploaded_by')
+        fields = ('file', 'name', 'length')
