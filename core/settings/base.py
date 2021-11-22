@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'core',
     'recordings',
     'examinations',
+    'analysis',
 ]
 
 MIDDLEWARE = [
