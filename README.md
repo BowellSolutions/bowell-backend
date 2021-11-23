@@ -10,9 +10,11 @@
 </div>
 
 ## Tools, libraries, frameworks:
+
 This setup has been tested with Python 3.9.
 
 ### Backend
+
 - Django + Django Rest Framework : `django` `djangorestframework`
 - Django Channels 3 : `channels`- handling websockets backend
 - `django-cors-headers` - handling cross origin requests
@@ -26,7 +28,9 @@ This setup has been tested with Python 3.9.
 - `drf-yasg` - OpenAPI documentation
 
 ## Development setup:
+
 Environmental variables in .env (random values below)
+
 ```
 SECRET_KEY=longrandomlygeneratedsecretkey
 DB_NAME=postgresdbname
@@ -36,9 +40,10 @@ PG_ADMIN_EMAIL=pgadminemail@x.y
 PG_ADMIN_PASSWORD=pgadminpassword
 ```
 
-
 ### Without Docker
+
 Create a virtual environment
+
 ```shell script
 py -3 -m venv venv
 
@@ -50,11 +55,13 @@ pip install -r requirements.txt
 ```
 
 Run django application
+
 ```shell script
 python manage.py runserver
 ```
 
 Preparing (if there are any changes to db schema) and running migrations
+
 ```shell script
 python manage.py makemigrations
 
@@ -62,29 +69,36 @@ python manage.py migrate
 ```
 
 Create superuser
+
 ```shell script
 python manage.py createsuperuser
 ```
 
 ### Tests coverage
+
 Run tests using Coverage
+
 ```shell script
 coverage run manage.py test
 ```
+
 Get report from coverage:
+
 ```shell script
 coverage report -m
 ```
 
 ## With Docker
+
 **IMPORTANT**:
+
 - Change line endings in shell scripts from CRLF to LF
 - Remove twisted-iocpsupport from requirements.txt if present
 - Remember about env variables
 
-Make sure Docker Engine is running.  
+Make sure Docker Engine is running.
 
-While in **root directory**, build docker images and run them with docker-compose. This might take up to few minutes. 
+While in **root directory**, build docker images and run them with docker-compose. This might take up to few minutes.
 Rebuilding image is crucial after installing new packages via pip.
 
 ```shell script
@@ -94,23 +108,67 @@ docker-compose up --build
 Application should be up and running: backend `127.0.0.1:8000`.
 
 If docker images are installed and **no additional packages have been installed**, just run to start containers:
+
 ```shell script
 docker-compose up
 ```
 
 Bringing down containers
+
 ```shell script
 docker-compose down
 ```
 
 To run commands in an active container:
+
 ```shell script
 docker exec -it <container_id/container_name> <command>
 ```
 
 e.g
+
 ```shell
 docker exec -it backend python manage.py migrate
 docker exec -it backend python manage.py shell
 docker exec -it backend bash
+```
+
+## Production setup
+
+Environmental variables:
+
+```
+DJANGO_SETTINGS_MODULE=core.settings.prod
+SECRET_KEY
+STATIC_ROOT     # path to dir for storing static files
+MEDIA_ROOT      # path to dir for storing recordings 
+BACKEND_HOST    # e.g example.com
+FRONTEND_URL    # e.g https://example.com
+DB_NAME
+DB_USER
+DB_PASSWORD
+DB_HOST
+DB_PORT
+REDIS_HOST
+REDIS_PORT
+REDIS_AUTH_PASSWORD
+```
+
+Build static files (STATIC_ROOT has to exist first for that to succeed)
+
+```shell
+python manage.py collectstatic --no-input
+```
+
+Making migrations and migrating without user input
+
+```shell
+python3 manage.py makemigrations --no-input
+python3 manage.py migrate --no-input
+```
+
+Running backend
+
+```shell
+daphne -b 0.0.0.0 -p 8000 core.asgi:application -v2
 ```
