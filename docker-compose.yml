@@ -40,6 +40,8 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PG_ADMIN_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PG_ADMIN_PASSWORD}
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
 
   redis_db:
     container_name: redis_db
@@ -69,4 +71,5 @@ services:
 
 volumes:
   postgres-data:
+  pgadmin-data:
   redis-data:
