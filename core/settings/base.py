@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     # apps
     'users',
     'core',
+    'recordings',
 ]
 
 MIDDLEWARE = [
@@ -184,6 +185,8 @@ CORS_ALLOWED_ORIGINS = [
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR.parent, 'staticfiles')
+
+MEDIA_ROOT = os.environ.get('MEDIA_ROOT', os.path.join(BASE_DIR.parent, 'media'))
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
