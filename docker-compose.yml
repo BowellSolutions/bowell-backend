@@ -57,7 +57,7 @@ services:
       dockerfile: Dockerfile.Celery
     command: >
       sh -c "python manage.py wait_for_db &&
-             celery -A core worker -l INFO"
+             celery -A analysis worker -l INFO"
     environment:
       - DJANGO_SETTINGS_MODULE=core.settings.dev
     volumes:
