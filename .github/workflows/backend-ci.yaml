@@ -10,11 +10,56 @@ on:
       - main
 jobs:
 
-  build:
-
-    runs-on: ubuntu-latest
-
+build-and-deploy:
+    name: build image
+    runs-on: self-hosted
+    needs: [jest-tests]
     steps:
-    - uses: actions/checkout@v2
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Checkout infra
+        uses: actions/checkout@v2
+        with:
+          repository: BowellSolutions/bowell-infra
+          token: ${{ secrets.GH_PAT }} 
+          path: infra
+          ref: develop
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+      - name: Set buildkit pod name
+        id: buildkit_pod
+        run: echo "::set-output name=pod_name::front-buildkit-${{ github.run_number }}"
+      - name: Generate image's name based on tag and date
+        id: image_name
+        run: echo "::set-output name=name::backend:${{ steps.date.outputs.date }}_${{ github.run_number }}"
+      - name: Kubectl apply buildkit pod
+        run: |
+          cat infra/build-agents/buildkit/pod.yaml | sed "s|{{POD_NAME}}|${{ steps.buildkit_pod.outputs.pod_name }}|" | kubectl apply -f -
+      - name: Build image
+        run: |
+          kubectl wait --timeout=300s --for=condition=Ready pod/${{ steps.buildkit_pod.outputs.pod_name }} -n build-agents-dev 
+          kubectl exec -n build-agents-dev ${{ steps.buildkit_pod.outputs.pod_name }} -- update-ca-certificates 
+          kubectl cp ./ ${{ steps.buildkit_pod.outputs.pod_name }}:/tmp/bcontext -n build-agents-dev 
+          kubectl exec -n build-agents-dev ${{ steps.buildkit_pod.outputs.pod_name }} -- buildctl \
+                    build \
+                    --frontend dockerfile.v0 \
+                    --local dockerfile=. \
+                    --local context=/tmp/bcontext \
+                    --frontend-opt filename=tmp/bcontext/Dockerfile.prod \
+                    --output type=image,\"name=nexus.nexus-dev.svc.cluster.local:5056/bowelsound/${{ steps.image_name.outputs.name }},nexus.nexus-dev.svc.cluster.local:5056/bowelsound/backend:latest\",push=true \
+                    --export-cache type=registry,ref=torisels/backend:latest,mode=max \
+                    --import-cache type=registry,ref=torisels/backend:latest
+          retVal=$?
+          if [ "$retVal" -ne "0" ]; then
+              echo "Error when generating image"
+              kubectl logs ${{ steps.buildkit_pod.outputs.pod_name }} -n build-agents-dev --tail 1000 && kubectl delete pod -n build-agents-dev ${{ steps.buildkit_pod.outputs.pod_name }}
+              exit 1
+          fi
+          kubectl delete pod -n build-agents-dev ${{ steps.buildkit_pod.outputs.pod_name }}
+          
+      - name: Apply new deployment
+        run : |
+          sed "s|{{IMAGE_NAME}}|${{ steps.image_name.outputs.name }}|" infra/backend/k8s/deployment.yaml | kubectl apply -f -
+          kubectl rollout restart deployment/bowelsound-backend -n bowelsound-dev
+          kubectl rollout status deployment/bowelsound-backend -n bowelsound-dev --timeout=300s
