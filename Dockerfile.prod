@@ -1,0 +1,24 @@
+FROM python:3.9.6-alpine
+
+ENV PYTHONUNBUFFERED=1
+
+RUN  \
+    apk update && \
+    apk upgrade && \
+    apk add bash postgresql-libs libressl-dev musl-dev libffi-dev cargo && \
+    rm -rf /var/cache/apk/*
+
+WORKDIR /app
+COPY requirements.txt .
+
+RUN  \
+    apk add --virtual .build-deps gcc postgresql-dev && \
+    pip3 install --upgrade pip -r requirements.txt && \
+    apk --purge del .build-deps
+
+COPY . .
+
+# Be sure to use 0.0.0.0 for the host within the Docker container,
+# otherwise the browser won't be able to find it
+RUN ["chmod", "+x", "/app/scripts/entrypoint-prod.sh"]
+ENTRYPOINT [ "/app/scripts/entrypoint-prod.sh" ]
