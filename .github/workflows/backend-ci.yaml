@@ -12,7 +12,6 @@ jobs:
   build-and-deploy:
       name: build image
       runs-on: self-hosted
-      needs: [jest-tests]
       steps:
         - name: Checkout
           uses: actions/checkout@v2
