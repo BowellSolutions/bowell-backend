@@ -63,7 +63,7 @@ jobs:
             kubectl rollout restart deployment/bowelsound-backend -n bowelsound-dev
             kubectl rollout status deployment/bowelsound-backend -n bowelsound-dev --timeout=300s
         - name: Apply new deployment - celery
-            run: |
-              sed "s|{{IMAGE_NAME}}|${{ steps.image_name.outputs.name }}|" infra/celery/k8s/deployment.yaml | kubectl apply -f -
-              kubectl rollout restart deployment/celery -n bowelsound-dev
-              kubectl rollout status deployment/celery -n bowelsound-dev --timeout=300s
+          run: |
+            sed "s|{{IMAGE_NAME}}|${{ steps.image_name.outputs.name }}|" infra/celery/k8s/deployment.yaml | kubectl apply -f -
+            kubectl rollout restart deployment/celery -n bowelsound-dev
+            kubectl rollout status deployment/celery -n bowelsound-dev --timeout=300s
