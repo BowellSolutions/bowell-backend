@@ -59,14 +59,26 @@ class RecordingBeforeAnalysisSerializer(serializers.ModelSerializer):
 
     # todo return if examination does not exists
     def get_examinations(self, obj):
+        return ExaminationDetailSerializer(obj.examination_set.first()).data
+
+    class Meta:
+        model = Recording
+        fields = ('id', 'file', 'name', 'uploaded_at', 'examination')
+
+
+class ListRecordingsBeforeAnalysisSerializer(serializers.ModelSerializer):
+    examination = serializers.SerializerMethodField('get_examinations')
+
+    @property
+    def _user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+
+    def get_examinations(self, obj):
         if obj.examination_set.first():
             return ExaminationDetailSerializer(obj.examination_set.first()).data
-
-        examinations = Examination.objects.filter(doctor=self._user).order_by('id')
-        if not examinations:
-            print(examinations)
-            return None
-        return ExaminationDetailSerializer(examinations, many=True).data
+        return None
 
     class Meta:
         model = Recording
