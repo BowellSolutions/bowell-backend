@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Recording
-from .serializers import RecordingBeforeAnalysisSerializer, RecordingAfterAnalysisSerializer, RecordingCreateSerializer
+from .serializers import ListRecordingsBeforeAnalysisSerializer, RecordingAfterAnalysisSerializer, RecordingCreateSerializer
 
 
 class RecordingViewSet(
@@ -14,7 +14,7 @@ class RecordingViewSet(
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet
 ):
-    serializer_class = RecordingBeforeAnalysisSerializer
+    serializer_class = ListRecordingsBeforeAnalysisSerializer
     permission_classes = [IsAuthenticated]
     queryset = Recording.objects.all()
 
