@@ -1,24 +1,33 @@
-FROM python:3.9.6-alpine
+# syntax=docker/dockerfile:1.3
+
+FROM python:3.9.6-alpine as compile-image
 
 ENV PYTHONUNBUFFERED=1
 
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+WORKDIR /build
+COPY requirements.txt .
 RUN  \
     apk update && \
     apk upgrade && \
     apk add bash postgresql-libs libressl-dev musl-dev libffi-dev cargo && \
-    rm -rf /var/cache/apk/*
-
-WORKDIR /app
-COPY requirements.txt .
-
-RUN  \
     apk add --virtual .build-deps gcc postgresql-dev && \
     pip3 install --upgrade pip -r requirements.txt && \
     apk --purge del .build-deps
 
-COPY . .
+FROM python:3.9.6-alpine as run-image
+ENV PYTHONUNBUFFERED=1
 
-# Be sure to use 0.0.0.0 for the host within the Docker container,
-# otherwise the browser won't be able to find it
+COPY --from=compile-image /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+RUN  \
+    apk update && \
+    apk upgrade && \
+    apk add bash postgresql-libs
+WORKDIR /app
+COPY . .
 RUN ["chmod", "+x", "/app/scripts/entrypoint-prod.sh"]
 ENTRYPOINT [ "/app/scripts/entrypoint-prod.sh" ]
