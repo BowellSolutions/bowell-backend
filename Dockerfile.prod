@@ -26,7 +26,8 @@ ENV PATH="/opt/venv/bin:$PATH"
 RUN  \
     apk update && \
     apk upgrade && \
-    apk add bash postgresql-libs
+    apk add bash postgresql-libs cargo && \
+    rm -rf /var/cache/apk/*
 WORKDIR /app
 COPY . .
 RUN ["chmod", "+x", "/app/scripts/entrypoint-prod.sh"]
