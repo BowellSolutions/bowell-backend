@@ -1,18 +1,18 @@
-# ----------------------------------------------
-# author: Hubert Decyusz
-# description: File consists of serializers definition
-# used for correct data flow by using correct attributes
-# from Recording model which can be used to perform
-# different operations on particular object.
-#
-# Used serializers:
-#
-# ExaminationsFilteredPrimaryKeyRelatedField - logged user related examinations
-# RecordingCreateSerializer - recording creation
-# RecordingAfterAnalysisSerializer - full recording model definition also used for update
-# RecordingBeforeAnalysisSerializer - quick summary of object
-# ListRecordingsBeforeAnalysisSerializer - list of uploaded recordings
+"""
+author: Hubert Decyusz
+description: File consists of serializers definition
+used for correct data flow by using correct attributes
+from Recording model which can be used to perform
+different operations on particular object.
 
+Used serializers:
+
+ExaminationsFilteredPrimaryKeyRelatedField - logged user related examinations
+RecordingCreateSerializer - recording creation
+RecordingAfterAnalysisSerializer - full recording model definition also used for update
+RecordingBeforeAnalysisSerializer - quick summary of object
+ListRecordingsBeforeAnalysisSerializer - list of uploaded recordings
+"""
 
 from rest_framework import serializers
 from examinations.models import Examination

@@ -1,8 +1,9 @@
-# ----------------------------------------------
-# author: Wojciech Nowicki
-# description: File contains model description
-# of Recording class. Class has no relation dependent
-# attributes, only those necessary for full model definition.
+"""
+author: Wojciech Nowicki
+description: File contains model description
+of Recording class. Class has no relation dependent
+attributes, only those necessary for full model definition.
+"""
 
 from django.db import models
 

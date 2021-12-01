@@ -1,7 +1,8 @@
-# ----------------------------------------------
-# author: Hubert Decyusz
-# description: File contains tests used for
-# examinations app testing.
+"""
+author: Hubert Decyusz
+description: File contains tests used for
+examinations app testing.
+"""
 
 import os
 import shutil

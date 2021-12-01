@@ -1,9 +1,10 @@
-# ----------------------------------------------
-# author: Hubert Decyusz
-# description: File contains model description
-# of Examination class including relations,
-# attribute types and constraints which are
-# reflected in database table.
+"""
+author: Hubert Decyusz
+description: File contains model description
+of Examination class including relations,
+attribute types and constraints which are
+reflected in database table.
+"""
 
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models

@@ -1,8 +1,8 @@
-# ----------------------------------------------
-# author: Wojciech Nowicki, Hubert Decyusz
-# description: File contains tests used for
-# recordings app testing.
-
+"""
+author: Wojciech Nowicki, Hubert Decyusz
+description: File contains tests used for
+recordings app testing.
+"""
 
 import os
 import shutil
