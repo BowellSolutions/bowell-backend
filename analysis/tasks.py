@@ -61,19 +61,20 @@ model_mock = {
 
 @app.task
 def process_recording(recording_id: int):
-    recording = Recording.objects.filter(id=recording_id)
+    recording = Recording.objects.filter(id=recording_id).first()
+    path = recording.file.path
 
     if settings.CELERY_USE_MOCK_MODEL:
         data = call_mock()
     else:
-        data = call_model(recording.file.path)["data"]
+        data = call_model(path)["data"]
     recording.update(**data)
     return recording
 
 
 def call_model(file_path: str):
     url = f"{settings.CELERY_MODEL_URL}/inference"
-
+    print(f"FILE path: {file_path}")
     files = [
         ('file', open(file_path, 'rb'))
     ]
