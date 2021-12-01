@@ -1,17 +1,13 @@
+"""
+author: Wojciech Nowicki
+description: File contains model description
+of Recording class. Class has no relation dependent
+attributes, only those necessary for full model definition.
+"""
+
 from django.db import models
 
 
-def auto_str(cls):
-    def __str__(self):
-        return '%s(%s)' % (
-            type(self).__name__,
-            ', '.join('%s=%s' % item for item in vars(self).items())
-        )
-    cls.__str__ = __str__
-    return cls
-
-
-@auto_str
 class Recording(models.Model):
     file = models.FileField(upload_to='recordings')
     name = models.CharField(max_length=255)

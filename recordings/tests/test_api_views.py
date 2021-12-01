@@ -1,7 +1,12 @@
+"""
+author: Wojciech Nowicki, Hubert Decyusz
+description: File contains tests used for
+recordings app testing.
+"""
+
 import os
 import shutil
 from pathlib import Path
-
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase
