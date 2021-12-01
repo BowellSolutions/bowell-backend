@@ -30,13 +30,14 @@ class ExaminationSerializer(serializers.ModelSerializer):
 
 class ExaminationCreateSerializer(serializers.ModelSerializer):
     doctor = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(is_staff=True))
+    patient = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(is_staff=False))
 
     def to_representation(self, instance):
         return ExaminationSerializer(instance).data
 
     class Meta:
         model = Examination
-        fields = ('doctor', 'date')
+        fields = ('patient', 'doctor', 'date')
 
 
 class ExaminationUpdateSerializer(serializers.ModelSerializer):
