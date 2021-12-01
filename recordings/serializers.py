@@ -54,7 +54,7 @@ class RecordingCreateSerializer(serializers.ModelSerializer):
             examination.save()
 
             """celery mocked task - remove later"""
-            process_recording.delay(instance.id)
+            process_recording.delay(instance.id, instance.file.path)
             """---------------------------------"""
         return instance
 
