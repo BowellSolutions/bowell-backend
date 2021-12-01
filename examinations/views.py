@@ -1,3 +1,10 @@
+# ----------------------------------------------
+# author: Hubert Decyusz
+# description: File consists of viewset definition
+# used for correct data flow input and output by
+# mapping usage of correct endpoints, http methods
+# and serializers, based on taken actions.
+
 from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAuthenticated
 
@@ -12,6 +19,14 @@ class ExaminationViewSet(
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet
 ):
+    """
+    GET     /api/examinations/          - list all examinations
+    POST    /api/examinations/          - register new examination
+    GET     /api/examinations/<int:id>/ - retrieve examination
+    PUT     /api/examinations/<int:id>/ - update examination
+    PATCH   /api/examinations/<int:id>/ - partially update examination
+    """
+
     serializer_class = ExaminationSerializer
     permission_classes = [IsAuthenticated]
 

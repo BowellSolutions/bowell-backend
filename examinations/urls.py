@@ -1,3 +1,8 @@
+# ----------------------------------------------
+# author: Hubert Decyusz
+# description: File registers api endpoints
+# for model methods usage.
+
 from rest_framework.routers import SimpleRouter
 from .views import ExaminationViewSet
 

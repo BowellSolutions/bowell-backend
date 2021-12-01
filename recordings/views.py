@@ -1,3 +1,10 @@
+# ----------------------------------------------
+# author: Wojciech Nowicki
+# description: File consists of viewset definition
+# used for correct data flow input and output by
+# mapping usage of correct endpoints, http methods
+# and serializers, based on taken actions.
+
 from rest_framework import mixins, viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -14,6 +21,14 @@ class RecordingViewSet(
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet
 ):
+    """
+    GET     /api/recordings/          - list all examinations
+    POST    /api/recordings/          - register new recording
+    GET     /api/recordings/<int:id>/ - retrieve recording
+    PUT     /api/recordings/<int:id>/ - update recording
+    PATCH   /api/recordings/<int:id>/ - partially update recording
+    """
+
     serializer_class = ListRecordingsBeforeAnalysisSerializer
     permission_classes = [IsAuthenticated]
     queryset = Recording.objects.all()
