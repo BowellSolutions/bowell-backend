@@ -23,7 +23,7 @@ class RecordingViewSet(
     viewsets.GenericViewSet
 ):
     """
-    GET     /api/recordings/          - list all examinations
+    GET     /api/recordings/          - list all recordings
     POST    /api/recordings/          - register new recording
     GET     /api/recordings/<int:id>/ - retrieve recording
     PUT     /api/recordings/<int:id>/ - update recording
