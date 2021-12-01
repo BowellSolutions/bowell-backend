@@ -1,3 +1,4 @@
+import time
 from time import sleep
 
 from celery import shared_task
@@ -60,5 +61,7 @@ model_mock = {
 
 @app.task
 def process_recording(recording_id: int):
+    # simulate long running function
+    time.sleep(10)
     recording = Recording.objects.filter(id=recording_id).update(**model_mock)
     return recording

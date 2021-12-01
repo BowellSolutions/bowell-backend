@@ -6,15 +6,18 @@ from recordings.models import Recording
 
 
 class TestModelResponse(TestCase):
-    def test_long_running_mocked_model_response(self):
-        recording = Recording.objects.create(
+    def setUp(self):
+        self.recording = Recording.objects.create(
             file=SimpleUploadedFile("test.wav", b"file_content", content_type="audio/wav"),
             name="test.wav"
         )
-        task = process_recording.s(recording.id).apply()
+
+    def test_long_running_mocked_model_response(self):
+        task = process_recording.s(self.recording.id).apply()
         self.assertEqual(task.status, 'SUCCESS')
-        self.assertEqual(task.result, recording.id)
-        r = Recording.objects.get(id=recording.id)
+        self.assertEqual(task.result, self.recording.id)
+        # get refresh model
+        r = Recording.objects.get(id=self.recording.id)
         self.assertDictEqual(
             {
                 'bowell_sounds_number': r.bowell_sounds_number,
