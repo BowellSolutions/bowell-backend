@@ -1,10 +1,12 @@
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import TestCase, override_settings
+from django.conf import settings
 
 from analysis.tasks import process_recording, model_mock
 from recordings.models import Recording
 
 
+@override_settings(CELERY_USE_MOCK_MODEL=True)
 class TestModelResponse(TestCase):
     def setUp(self):
         self.recording = Recording.objects.create(

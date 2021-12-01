@@ -60,6 +60,9 @@ REDIS_URL = f'redis://:{REDIS_AUTH_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}'
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
 
+CELERY_MODEL_URL = os.environ.get('CELERY_MODEL_URL')
+CELERY_USE_MOCK_MODEL = False
+
 # Redis channel layers (Django Channels + Redis)
 CHANNEL_LAYERS = {
     'default': {

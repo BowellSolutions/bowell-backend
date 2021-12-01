@@ -1,20 +1,20 @@
 import time
-from time import sleep
-
+import requests
 from celery import shared_task
 
 from analysis.celery import app
 from recordings.models import Recording
+from django.conf import settings
 
 
 @shared_task
 def simple_task(x: int, y: int):
-    sleep(1)
+    time.sleep(1)
     return x + y
 
 
 model_mock = {
-    'bowell_sounds_number': 1.0,
+    'bowell_sounds_number': 0.01,
     'bowell_sounds_per_minute': 2.0,
     # frequency analysis in three-minute periods
     'mean_per_minute': 3.0,
@@ -61,7 +61,25 @@ model_mock = {
 
 @app.task
 def process_recording(recording_id: int):
-    # simulate long running function
-    time.sleep(10)
-    recording = Recording.objects.filter(id=recording_id).update(**model_mock)
+    recording = Recording.objects.filter(id=recording_id)
+
+    if settings.CELERY_USE_MOCK_MODEL:
+        data = call_mock()
+    else:
+        data = call_model(recording.file.path)["data"]
+    recording.update(**data)
     return recording
+
+
+def call_model(file_path: str):
+    url = f"{settings.CELERY_MODEL_URL}/inference"
+
+    files = [
+        ('file', open(file_path, 'rb'))
+    ]
+    response = requests.request("POST", url, files=files)
+    return response.json()
+
+
+def call_mock():
+    return model_mock
