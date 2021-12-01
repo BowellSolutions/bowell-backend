@@ -1,4 +1,6 @@
 from rest_framework import serializers
+
+from analysis.tasks import process_recording
 from examinations.models import Examination
 from .models import Recording
 from examinations.serializers import ExaminationDetailSerializer
@@ -34,6 +36,10 @@ class RecordingCreateSerializer(serializers.ModelSerializer):
         else:
             examination.recording = instance
             examination.save()
+
+            """celery mocked task - remove later"""
+            process_recording.delay(instance.id)
+            """---------------------------------"""
         return instance
 
     class Meta:
