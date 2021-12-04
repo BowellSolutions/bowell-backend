@@ -61,7 +61,6 @@ model_mock = {
 
 @app.task
 def process_recording(recording_id: int, up_path):
-    time.sleep(5)
     path = up_path
 
     if settings.CELERY_USE_MOCK_MODEL:
