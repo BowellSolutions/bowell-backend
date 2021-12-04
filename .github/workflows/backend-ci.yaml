@@ -46,15 +46,15 @@ jobs:
                       --local context=/tmp/bcontext \
                       --frontend-opt filename=tmp/bcontext/Dockerfile.prod \
                       --output type=image,\"name=nexus.nexus-dev.svc.cluster.local:5056/bowelsound/${{ steps.image_name.outputs.name }},nexus.nexus-dev.svc.cluster.local:5056/bowelsound/backend:latest\",push=true \
-                      --export-cache type=registry,ref=torisels/backend:latest,mode=max \
-                      --import-cache type=registry,ref=torisels/backend:latest
+                      --export-cache type=local,dest=/cache/buildkit/local,mode=max \
+                      --import-cache type=local,src=/cache/buildkit/local
             retVal=$?
             if [ "$retVal" -ne "0" ]; then
                 echo "Error when generating image"
                 kubectl logs ${{ steps.buildkit_pod.outputs.pod_name }} -n build-agents-dev --tail 1000 && kubectl delete pod -n build-agents-dev ${{ steps.buildkit_pod.outputs.pod_name }}
                 exit 1
             fi
-            kubectl delete pod -n build-agents-dev ${{ steps.buildkit_pod.outputs.pod_name }}
+            # kubectl delete pod -n build-agents-dev ${{ steps.buildkit_pod.outputs.pod_name }}
 
         - name: Apply new deployment - backend
           run : |
