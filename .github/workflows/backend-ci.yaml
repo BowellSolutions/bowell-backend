@@ -54,7 +54,7 @@ jobs:
                 kubectl logs ${{ steps.buildkit_pod.outputs.pod_name }} -n build-agents-dev --tail 1000 && kubectl delete pod -n build-agents-dev ${{ steps.buildkit_pod.outputs.pod_name }}
                 exit 1
             fi
-            # kubectl delete pod -n build-agents-dev ${{ steps.buildkit_pod.outputs.pod_name }}
+            kubectl delete pod -n build-agents-dev ${{ steps.buildkit_pod.outputs.pod_name }}
 
         - name: Apply new deployment - backend
           run : |
