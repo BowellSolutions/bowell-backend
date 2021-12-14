@@ -149,7 +149,9 @@ USE_L10N = True
 
 USE_TZ = True
 
-# Rest Framework config
+# Django REST Framework config
+# https://www.django-rest-framework.org/api-guide/settings/
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
@@ -161,8 +163,10 @@ REST_FRAMEWORK = {
 }
 
 # JWT settings
+# https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
+
 SIMPLE_JWT = {
-    # https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
+
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': False,
@@ -174,7 +178,9 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_COOKIE': 'refresh',
 }
 
-# Cors headers
+# CORS headers
+# https://pypi.org/project/django-cors-headers/
+
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
@@ -208,3 +214,8 @@ SWAGGER_SETTINGS = {
         }
     }
 }
+
+# Custom user
+# https://docs.djangoproject.com/en/3.2/topics/auth/customizing/
+
+AUTH_USER_MODEL = 'users.User'
