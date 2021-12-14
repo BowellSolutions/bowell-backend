@@ -5,10 +5,11 @@ used for correct data flow input and output by
 mapping usage of correct endpoints, http methods
 and serializers, based on taken actions.
 """
-
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 
 from .models import Recording
 from .serializers import ListRecordingsBeforeAnalysisSerializer, RecordingAfterAnalysisSerializer, RecordingCreateSerializer
@@ -41,6 +42,10 @@ class RecordingViewSet(
             return RecordingAfterAnalysisSerializer
         return super().get_serializer_class()
 
+    @swagger_auto_schema(responses={
+        HTTP_200_OK: "Recording was successfully detached from examination.",
+        HTTP_400_BAD_REQUEST: "Recording was not assigned to any examination."
+    })
     def destroy(self, request, *args, **kwargs):
         examination_qs = self.get_object().examination_set
         if examination_qs.exists():

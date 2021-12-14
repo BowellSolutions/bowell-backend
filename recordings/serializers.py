@@ -5,9 +5,12 @@ used for correct data flow by using correct attributes
 from Recording model which can be used to perform
 different operations on particular object.
 
-Used serializers:
+Used custom serializer fields:
 
 ExaminationsFilteredPrimaryKeyRelatedField - logged user related examinations
+
+Used serializers:
+
 RecordingCreateSerializer - recording creation
 RecordingAfterAnalysisSerializer - full recording model definition also used for update
 RecordingBeforeAnalysisSerializer - quick summary of object
