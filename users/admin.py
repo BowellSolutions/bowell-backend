@@ -1,13 +1,26 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.forms import UsernameField, UserCreationForm
+from django.contrib.auth.forms import UsernameField, UserCreationForm, UserChangeForm
 from django.forms import EmailField
 from django.utils.translation import gettext_lazy as _
 
 from users.models import User
 
 
+class CustomUsernameField(UsernameField):
+    """UsernameField but without built-in value normalization if value is None"""
+
+    def to_python(self, value):
+        # do not perform any normalization if username is None or empty
+        if not value:
+            return
+        # else normalize username
+        return super().to_python(value)
+
+
 class UserCreateForm(UserCreationForm):
+    """Custom User Creation Form in Admin interface"""
+
     class Meta:
         model = User
         fields = (
@@ -17,7 +30,16 @@ class UserCreateForm(UserCreationForm):
             "birth_date",
             "type",
         )
-        field_classes = {'username': UsernameField, 'email': EmailField}
+        field_classes = {'username': CustomUsernameField, 'email': EmailField}
+
+
+class UserModifyForm(UserChangeForm):
+    """Custom User Change Form in Admin interface"""
+
+    class Meta:
+        model = User
+        fields = '__all__'
+        field_classes = {'username': CustomUsernameField}
 
 
 class UserAdmin(BaseUserAdmin):
@@ -40,6 +62,7 @@ class UserAdmin(BaseUserAdmin):
             ),
         }),
     )
+    form = UserModifyForm
     add_form = UserCreationForm
 
 
