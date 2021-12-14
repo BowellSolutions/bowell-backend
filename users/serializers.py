@@ -8,53 +8,94 @@ User = get_user_model()
 
 
 class CookieTokenRefreshSerializer(TokenRefreshSerializer):
+    """Serializer for refreshing JWT"""
+
     def validate(self, attrs):
+        # If refresh token was found in cookies,
+        # use it instead of the one from request body (request body can be empty)
         if refresh := self.context['request'].COOKIES.get('refresh'):
             attrs['refresh'] = refresh
         return super().validate(attrs)
 
+    def create(self, validated_data):
+        """Implementation required by abstract base class"""
+        raise NotImplementedError()
+
+    def update(self, instance, validated_data):
+        """Implementation required by abstract base class"""
+        raise NotImplementedError()
+
 
 class CookieTokenVerifySerializer(TokenVerifySerializer):
+    """Serializer for veryfing if JWT is valid"""
+
     def validate(self, attrs):
+        # If refresh token was found in cookies,
+        # use it instead of the one from request body (request body can be empty)
         if access := self.context['request'].COOKIES.get('access'):
             attrs['token'] = access
         return super().validate(attrs)
 
+    def create(self, validated_data):
+        """Implementation required by abstract base class"""
+        raise NotImplementedError()
 
-# to do
+    def update(self, instance, validated_data):
+        """Implementation required by abstract base class"""
+        raise NotImplementedError()
+
+
 class UserSerializer(serializers.ModelSerializer):
+    """Serializer used for User representation"""
+
     class Meta:
         model = User
-        exclude = ('password',)
+        exclude = ('password', 'groups', 'user_permissions')
 
 
-# to do
 class RegisterUserSerializer(serializers.ModelSerializer):
+    """Serializer used for creating new user"""
+    password = serializers.CharField(write_only=True, style={'input_type': 'password'})
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
+    birth_date = serializers.DateField(required=True)
+
     class Meta:
         model = User
         fields = (
-            'username',
-            'password',
             'email',
+            'password',
             'first_name',
-            'last_name'
+            'last_name',
+            'birth_date',
+            'type',
         )
 
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            email=validated_data['email'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+            password=validated_data['password'],
+            birth_date=validated_data['birth_date'],
+            type=validated_data['type'],
+        )
+        return user
 
-# to do
+    def to_representation(self, instance):
+        # after submitting data, return data in format like in UserSerializer
+        return UserSerializer(instance).data
+
+
 class UpdateUserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(required=False, write_only=True, style={'input_type': 'password'})
-    email = serializers.EmailField(required=False)
-    first_name = serializers.CharField(required=False)
-    last_name = serializers.CharField(required=False)
+    """Serializer used for updating existing user's fields"""
 
     class Meta:
         model = User
         fields = (
-            'password',
-            'email',
             'first_name',
-            'last_name'
+            'last_name',
+            'birth_date',
         )
 
     def to_representation(self, instance):

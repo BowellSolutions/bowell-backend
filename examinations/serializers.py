@@ -46,8 +46,8 @@ class ExaminationSerializer(serializers.ModelSerializer):
 
 
 class ExaminationCreateSerializer(serializers.ModelSerializer):
-    doctor = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(is_staff=True))
-    patient = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(is_staff=False))
+    patient = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(type=User.Types.PATIENT))
+    doctor = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(type=User.Types.DOCTOR))
 
     def to_representation(self, instance):
         return ExaminationSerializer(instance).data
@@ -58,12 +58,17 @@ class ExaminationCreateSerializer(serializers.ModelSerializer):
 
 
 class ExaminationUpdateSerializer(serializers.ModelSerializer):
-    patient = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(is_staff=False))
-    doctor = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(is_staff=True))
+    patient = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(type=User.Types.PATIENT))
+    doctor = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(type=User.Types.DOCTOR))
+
+    def to_representation(self, instance):
+        return ExaminationSerializer(instance).data
 
     class Meta:
         model = Examination
-        fields = ('patient', 'height_cm', 'mass_kg', 'symptoms', 'medication', 'doctor', 'status', 'recording', 'overview')
+        fields = (
+            'patient', 'height_cm', 'mass_kg', 'symptoms', 'medication', 'doctor', 'status', 'recording', 'overview'
+        )
 
 
 class ExaminationDetailSerializer(serializers.ModelSerializer):

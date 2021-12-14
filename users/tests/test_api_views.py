@@ -19,7 +19,10 @@ class TestUsersViews(TestCase):
     @classmethod
     def setUpTestData(cls) -> None:
         # noinspection PyUnresolvedReferences
-        cls.user = User.objects.create_user(username='test', password='testing123')
+        cls.user = User.objects.create_user(
+            email='test@gmail.com', password='testing123',
+            first_name='te', last_name='st', type=User.Types.STAFF
+        )
 
     def _require_jwt_cookies(self, user) -> None:
         """Client will attach valid JWT Cookies"""
@@ -31,7 +34,7 @@ class TestUsersViews(TestCase):
 
     def test_obtain_jwt(self):
         response = self.client.post('/api/auth/token/', {
-            'username': 'test',
+            'email': 'test@gmail.com',
             'password': 'testing123'
         })
         res_json = response.json()
@@ -41,14 +44,14 @@ class TestUsersViews(TestCase):
 
     def test_obtain_jwt_missing_fields(self):
         response = self.client.post('/api/auth/token/', {
-            'username': 'test',
+            'email': 'test@gmail.com',
         })
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json(), {'password': ['This field is required.']})
 
     def test_obtain_jwt_user_not_found(self):
         response = self.client.post('/api/auth/token/', {
-            'username': 'nouser',
+            'email': 'nouser@gmail.com',
             'password': 'nouser123'
         })
         self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)

@@ -34,10 +34,11 @@ class ExaminationViewSet(
     def get_queryset(self):
         if self.request.user.is_anonymous:
             return Examination.objects.none()
-        elif self.request.user.is_staff:
+        elif self.request.user.type == "DOCTOR":
             return Examination.objects.filter(doctor=self.request.user)
-        else:
+        elif self.request.user.type == "PATIENT":
             return Examination.objects.filter(patient=self.request.user)
+        return Examination.objects.none()
 
     def get_serializer_class(self):
         if hasattr(self, 'action') and self.action == 'create':

@@ -7,6 +7,7 @@ examinations app testing.
 import os
 import shutil
 from pathlib import Path
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -17,7 +18,6 @@ from rest_framework.test import APIClient
 
 from examinations.models import Examination
 from recordings.models import Recording
-from examinations.serializers import ExaminationSerializer, ExaminationUpdateSerializer, ExaminationDetailSerializer
 from users.utils import get_tokens_for_user
 
 TEST_FILES_DIR = os.path.join(settings.BASE_DIR.parent, 'test_files')
@@ -27,14 +27,18 @@ User = get_user_model()
 
 class TestExaminationsAPIViews(TestCase):
     def setUp(self):
-        # recreate data on each run
         self.client = APIClient()
 
     @classmethod
     def setUpTestData(cls):
-        # create data before running any tests
-        cls.user1 = User.objects.create(username="test1", password="test1", is_staff=True)
-        cls.user2 = User.objects.create(username="test3", password="test1")
+        cls.user1 = User.objects.create_user(
+            email="test1@gmail.com", password="test1",
+            first_name="", last_name="", type=User.Types.DOCTOR
+        )
+        cls.user2 = User.objects.create_user(
+            email="test3@gmail.com", password="test1",
+            first_name="", last_name="", type=User.Types.PATIENT
+        )
         rec = SimpleUploadedFile("file.wav", b"file_content", content_type="audio/wav")
         cls.recording1 = Recording.objects.create(
             file=rec,
@@ -76,10 +80,10 @@ class TestExaminationsAPIViews(TestCase):
     def test_list_examinations(self):
         self._require_jwt_cookies(user=self.user1)
         response = self.client.post("/api/examinations/", {
-                'patient': self.user2.id,
-                'doctor': self.user1.id,
-                'date': timezone.now()
-            })
+            'patient': self.user2.id,
+            'doctor': self.user1.id,
+            'date': timezone.now()
+        })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.get("/api/examinations/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -102,8 +106,7 @@ class TestExaminationsAPIViews(TestCase):
 
     def test_create_examination_empty(self):
         self._require_jwt_cookies(self.user1)
-        response = self.client.post("/api/examinations/", {
-        })
+        response = self.client.post("/api/examinations/", {})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_examination_without_doctor(self):
@@ -124,7 +127,10 @@ class TestExaminationsAPIViews(TestCase):
 
     def test_create_examination_with_patient(self):
         self._require_jwt_cookies(self.user1)
-        user2 = User.objects.create(username="test2", password="test1")
+        user2 = User.objects.create_user(
+            email="test2@gmail.com", password="test1",
+            first_name="", last_name="", type=User.Types.PATIENT
+        )
         response = self.client.post("/api/examinations/", {
             'patient': user2.id,
             'doctor': self.user1.id,
@@ -177,7 +183,6 @@ class TestExaminationsAPIViews(TestCase):
             'symptoms': 'abcd'
         })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
 
     def test_update_examination_attribute_wrong_type(self):
         self._require_jwt_cookies(self.user1)
@@ -244,4 +249,3 @@ class TestExaminationsAPIViews(TestCase):
             'mass_kg': 1000,
         })
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
