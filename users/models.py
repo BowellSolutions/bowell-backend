@@ -37,14 +37,15 @@ class UserManager(BaseUserManager):
         return user
 
     def create_user(
-        self, email: str, first_name: str, last_name: str, password: str, type: str
+        self, email: str, first_name: str, last_name: str, password: str, type: str, birth_date: str = None,
     ) -> "User":
         """Creates an instance of User without extra permissions and saves it to the database."""
         user = self.model(
             email=email,
             first_name=first_name,
             last_name=last_name,
-            type=type
+            type=type,
+            birth_date=birth_date
         )
         user.save(using=self._db)
         user.set_password(password)
