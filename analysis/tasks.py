@@ -13,6 +13,22 @@ def simple_task(x: int, y: int):
     return x + y
 
 
+mapper = {
+    "% of bowel sounds followed by another bowel sound within 100 ms": "repetition_within_100ms",
+    "% of bowel sounds followed by another bowel sound within 200 ms": "repetition_within_200ms",
+    "% of bowel sounds followed by another bowel sound within 50 ms": "repetition_within_50ms",
+    "Bowel sounds identified, total count": "bowell_sounds_number",
+    "Bowel sounds per minute, 1st decile": "first_decile_per_minute",
+    "Bowel sounds per minute, 1st quartile": "first_quartile_per_minute",
+    "Bowel sounds per minute, 3rd quartile": "third_quartile_per_minute",
+    "Bowel sounds per minute, 9th decile": "ninth_decile_per_minute",
+    "Bowel sounds per minute, mean": "mean_per_minute",
+    "Bowel sounds per minute, median": "median_per_minute",
+    "Bowel sounds per minute, minimum": "minimum_per_minute",
+    "Bowel sounds per minute, standard deviation": "deviation_per_minute",
+    "Bowel sounds per minute, total": "total_sound_index",
+    "Recording length, hours:minutes:seconds": "length",
+}
 model_mock = {
     'bowell_sounds_number': 0.01,
     'bowell_sounds_per_minute': 2.0,
@@ -66,7 +82,7 @@ def process_recording(recording_id: int, up_path):
     if settings.CELERY_USE_MOCK_MODEL:
         data = call_mock()
     else:
-        data = call_model(path)["data"]
+        data = call_model(path)
     recording = Recording.objects.filter(id=recording_id).update(**data)
     return recording
 
@@ -78,7 +94,15 @@ def call_model(file_path: str):
         ('file', open(file_path, 'rb'))
     ]
     response = requests.request("POST", url, files=files)
-    return response.json()
+
+    data = response.json()
+
+    raw_data = data["frames"]
+
+    # TODO: Save raw_data to db
+    stats = data["statistics"]["Main results"]
+
+    return {v: stats[k] for k, v in mapper.items()}
 
 
 def call_mock():
