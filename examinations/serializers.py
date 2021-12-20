@@ -31,7 +31,7 @@ class UserInfoSerializer(serializers.ModelSerializer):
 class RecordingInExaminationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recording
-        fields = ('file', 'name')
+        fields = ('id', 'file', 'name')
 
 
 class ExaminationSerializer(serializers.ModelSerializer):
