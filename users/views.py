@@ -51,7 +51,8 @@ class JWTObtainPairView(TokenObtainPairView):
                 max_age=access_cookie_max_age,
                 expires=access_cookie_max_age,
                 secure=not settings.DEBUG,
-                httponly=True
+                httponly=True,
+                samesite="None"
             )
 
         if refresh := response.data.get('refresh'):
@@ -62,7 +63,8 @@ class JWTObtainPairView(TokenObtainPairView):
                 max_age=refresh_cookie_max_age,
                 expires=refresh_cookie_max_age,
                 secure=not settings.DEBUG,
-                httponly=True
+                httponly=True,
+                samesite="None"
             )
         return super().finalize_response(request, response, *args, **kwargs)
 
@@ -103,7 +105,8 @@ class JWTRefreshView(TokenRefreshView):
                 max_age=access_cookie_max_age,
                 expires=access_cookie_max_age,
                 secure=not settings.DEBUG,
-                httponly=True
+                httponly=True,
+                samesite="None"
             )
         return super().finalize_response(request, response, *args, **kwargs)
 
