@@ -52,7 +52,7 @@ class JWTObtainPairView(TokenObtainPairView):
                 expires=access_cookie_max_age,
                 secure=not settings.DEBUG,
                 httponly=True,
-                samesite="None"
+                samesite="None" if not settings.DEBUG else "Lax"
             )
 
         if refresh := response.data.get('refresh'):
@@ -64,7 +64,7 @@ class JWTObtainPairView(TokenObtainPairView):
                 expires=refresh_cookie_max_age,
                 secure=not settings.DEBUG,
                 httponly=True,
-                samesite="None"
+                samesite="None" if not settings.DEBUG else "Lax"
             )
         return super().finalize_response(request, response, *args, **kwargs)
 
@@ -106,7 +106,7 @@ class JWTRefreshView(TokenRefreshView):
                 expires=access_cookie_max_age,
                 secure=not settings.DEBUG,
                 httponly=True,
-                samesite="None"
+                samesite="None" if not settings.DEBUG else "Lax"
             )
         return super().finalize_response(request, response, *args, **kwargs)
 
@@ -151,8 +151,13 @@ class JWTLogoutView(APIView):
             response = Response({'message': 'Logout successful!'}, status=HTTP_200_OK)
             response.delete_cookie('access')
 
-            refresh_token = RefreshToken(refresh)
-            refresh_token.blacklist()
+            try:
+                refresh_token = RefreshToken(refresh)
+                refresh_token.blacklist()
+            except TokenError:
+                # if refresh token has already been blacklisted, then just delete refresh cookie
+                pass
+
             response.delete_cookie('refresh')
             return response
         return Response(
