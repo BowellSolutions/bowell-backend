@@ -136,7 +136,3 @@ dmypy.json
 /vscode
 /.idea
 
-# Django migrations
-
-*/migrations/*
-!*/migrations/__init__.py
