@@ -143,6 +143,7 @@ SECRET_KEY
 STATIC_ROOT     # path to dir for storing static files
 MEDIA_ROOT      # path to dir for storing recordings 
 BACKEND_HOST    # e.g example.com
+BACKEND_URL     # e.g https://example.com
 FRONTEND_URL    # e.g https://example.com
 DB_NAME
 DB_USER
@@ -172,3 +173,25 @@ Running backend
 ```shell
 daphne -b 0.0.0.0 -p 8000 core.asgi:application -v2
 ```
+
+### Deployment to Heroku:
+Heroku is used as a backup to our production server 
+and maybe will be used as a staging environment in the future.
+
+Environmental variables to set in Heroku application:
+
+```
+DJANGO_SETTINGS_MODULE=core.settings.heroku
+SECRET_KEY
+STATIC_ROOT=staticfiles
+MEDIA_ROOT=media
+BACKEND_HOST    # e.g <app_name>.herokuapp.com
+BACKEND_URL    # e.g https://<app_name>.herokuapp.com
+FRONTEND_URL    # e.g https://<app_name>.vercel.app
+```
+
+Used addons: `heroku-postgres:hobby-dev`, `heroku-redis:hobby-dev`
+
+To activate worker: `heroku ps:scale worker=1:Free -a <app_name>`
+
+To run bash: `heroku run bash -a <app_name>`
