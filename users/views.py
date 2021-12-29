@@ -122,7 +122,7 @@ class JWTVerifyView(TokenVerifyView):
     })
     def post(self, request, *args, **kwargs) -> Response:
         # if access cookie exists and token was not submitted via form/request
-        if access := request.COOKIES.get('access') and not request.data.get('access'):
+        if access := request.COOKIES.get('access') and not request.data.get('token'):
             _data = dict(request.data)
             _data.update({"token": str(access)})
             serializer = self.get_serializer(data=_data)
