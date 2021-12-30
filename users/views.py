@@ -159,7 +159,11 @@ class JWTLogoutView(APIView):
     def get(self, request: Request, *args, **kwargs) -> Response:
         if refresh := request.COOKIES.get('refresh'):
             response = Response({'message': 'Logout successful!'}, status=HTTP_200_OK)
-            response.delete_cookie('access')
+
+            # delete access cookie
+            response.set_cookie(
+                key='access', max_age=0, secure=True, expires='Thu, 01 Jan 1970 00:00:00 GMT', samesite="None",
+            )
 
             try:
                 refresh_token = RefreshToken(refresh)
@@ -168,7 +172,11 @@ class JWTLogoutView(APIView):
                 # if refresh token has already been blacklisted, then just delete refresh cookie
                 pass
 
-            response.delete_cookie('refresh')
+            # delete refresh cookie
+            response.set_cookie(
+                key='refresh', max_age=0, secure=True, expires='Thu, 01 Jan 1970 00:00:00 GMT', samesite="None",
+            )
+
             return response
         return Response(
             {'message': 'Could not logout! Cookie \'refresh\' not found in request!'},
