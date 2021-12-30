@@ -53,7 +53,7 @@ class JWTObtainPairView(TokenObtainPairView):
                 secure=not settings.DEBUG,
                 # domain="vercel.app",
                 httponly=True,
-                samesite=None if not settings.DEBUG else "Lax"
+                samesite='None' if not settings.DEBUG else "Lax"
             )
 
         if refresh := response.data.get('refresh'):
@@ -66,7 +66,7 @@ class JWTObtainPairView(TokenObtainPairView):
                 secure=not settings.DEBUG,
                 # domain="vercel.app",
                 httponly=True,
-                samesite=None if not settings.DEBUG else "Lax"
+                samesite='None' if not settings.DEBUG else "Lax"
             )
         return super().finalize_response(request, response, *args, **kwargs)
 
@@ -109,7 +109,7 @@ class JWTRefreshView(TokenRefreshView):
                 secure=not settings.DEBUG,
                 # domain="vercel.app",
                 httponly=True,
-                samesite=None if not settings.DEBUG else "Lax"
+                samesite='None' if not settings.DEBUG else "Lax"
             )
         return super().finalize_response(request, response, *args, **kwargs)
 
