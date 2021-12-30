@@ -51,6 +51,7 @@ class JWTObtainPairView(TokenObtainPairView):
                 max_age=access_cookie_max_age,
                 expires=access_cookie_max_age,
                 secure=not settings.DEBUG,
+                domain="vercel.app",
                 httponly=True,
                 samesite="None" if not settings.DEBUG else "Lax"
             )
@@ -63,6 +64,7 @@ class JWTObtainPairView(TokenObtainPairView):
                 max_age=refresh_cookie_max_age,
                 expires=refresh_cookie_max_age,
                 secure=not settings.DEBUG,
+                domain="vercel.app",
                 httponly=True,
                 samesite="None" if not settings.DEBUG else "Lax"
             )
@@ -105,6 +107,7 @@ class JWTRefreshView(TokenRefreshView):
                 max_age=access_cookie_max_age,
                 expires=access_cookie_max_age,
                 secure=not settings.DEBUG,
+                domain="vercel.app",
                 httponly=True,
                 samesite="None" if not settings.DEBUG else "Lax"
             )
@@ -121,6 +124,9 @@ class JWTVerifyView(TokenVerifyView):
         HTTP_200_OK: openapi.Response('OK', CookieTokenVerifyResponseSerializer)
     })
     def post(self, request, *args, **kwargs) -> Response:
+        print("[REQUEST DATA]", request.data)
+        print("[REQUEST COOKIES]", request.COOKIES)
+
         # if access cookie exists and token was not submitted via form/request
         if access := request.COOKIES.get('access') and not request.data.get('token'):
             _data = dict(request.data)

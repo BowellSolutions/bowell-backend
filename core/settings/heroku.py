@@ -4,6 +4,10 @@ Configuration for deployment to Heroku (staging / backup for our production)
 from core.settings.prod import *
 import dj_database_url
 
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://\w+\.vercel\.app$",
+]
+
 DATABASE_URL = os.environ.get('DATABASE_URL')
 db_from_env = dj_database_url.config(
     default=DATABASE_URL, conn_max_age=500, ssl_require=True
