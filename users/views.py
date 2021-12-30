@@ -51,9 +51,9 @@ class JWTObtainPairView(TokenObtainPairView):
                 max_age=access_cookie_max_age,
                 expires=access_cookie_max_age,
                 secure=not settings.DEBUG,
-                domain="vercel.app",
+                # domain="vercel.app",
                 httponly=True,
-                samesite="None" if not settings.DEBUG else "Lax"
+                samesite=None if not settings.DEBUG else "Lax"
             )
 
         if refresh := response.data.get('refresh'):
@@ -64,9 +64,9 @@ class JWTObtainPairView(TokenObtainPairView):
                 max_age=refresh_cookie_max_age,
                 expires=refresh_cookie_max_age,
                 secure=not settings.DEBUG,
-                domain="vercel.app",
+                # domain="vercel.app",
                 httponly=True,
-                samesite="None" if not settings.DEBUG else "Lax"
+                samesite=None if not settings.DEBUG else "Lax"
             )
         return super().finalize_response(request, response, *args, **kwargs)
 
@@ -107,9 +107,9 @@ class JWTRefreshView(TokenRefreshView):
                 max_age=access_cookie_max_age,
                 expires=access_cookie_max_age,
                 secure=not settings.DEBUG,
-                domain="vercel.app",
+                # domain="vercel.app",
                 httponly=True,
-                samesite="None" if not settings.DEBUG else "Lax"
+                samesite=None if not settings.DEBUG else "Lax"
             )
         return super().finalize_response(request, response, *args, **kwargs)
 
@@ -141,6 +141,10 @@ class JWTVerifyView(TokenVerifyView):
             raise InvalidToken(e.args[0])
 
         return Response(serializer.validated_data, status=HTTP_200_OK)
+
+    def finalize_response(self, request: Request, response: Response, *args, **kwargs) -> Response:
+        print("[RESPONSE DATA]", response.data)
+        return super().finalize_response(request, response, *args, **kwargs)
 
 
 class JWTLogoutView(APIView):
