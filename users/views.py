@@ -51,6 +51,7 @@ class JWTObtainPairView(TokenObtainPairView):
                 max_age=access_cookie_max_age,
                 expires=access_cookie_max_age,
                 secure=not settings.DEBUG,
+                domain=".herokuapp.com",
                 httponly=True,
                 samesite='None' if not settings.DEBUG else "Lax"
             )
@@ -63,6 +64,7 @@ class JWTObtainPairView(TokenObtainPairView):
                 max_age=refresh_cookie_max_age,
                 expires=refresh_cookie_max_age,
                 secure=not settings.DEBUG,
+                domain=".herokuapp.com",
                 httponly=True,
                 samesite='None' if not settings.DEBUG else "Lax"
             )
@@ -105,6 +107,7 @@ class JWTRefreshView(TokenRefreshView):
                 max_age=access_cookie_max_age,
                 expires=access_cookie_max_age,
                 secure=not settings.DEBUG,
+                domain=".herokuapp.com",
                 httponly=True,
                 samesite='None' if not settings.DEBUG else "Lax"
             )
