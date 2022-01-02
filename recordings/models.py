@@ -4,11 +4,17 @@ description: File contains model description
 of Recording class. Class has no relation dependent
 attributes, only those necessary for full model definition.
 """
-
+from django.conf import settings
 from django.db import models
 
 
 class Recording(models.Model):
+    uploader = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True)
+
     file = models.FileField(upload_to='recordings')
     name = models.CharField(max_length=255)
     uploaded_at = models.DateTimeField(auto_now_add=True)
@@ -73,4 +79,3 @@ class Recording(models.Model):
     sounds_per_minute_vs_sound_index_scatterplot = models.BinaryField(blank=True, null=True)
     sounds_per_minute_vs_sound_duration_scatterplot = models.BinaryField(blank=True, null=True)
     sound_index_vs_duration_scatterplot = models.BinaryField(blank=True, null=True)
-
