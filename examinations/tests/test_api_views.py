@@ -12,6 +12,7 @@ from pathlib import Path
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db.models import Q
 from django.test import TestCase
 from django.utils import timezone
 from rest_framework import status
@@ -264,7 +265,7 @@ class TestExaminationsAPIViews(TestCase):
             'mass_kg': 1000,
         })
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
+        
     def test_update_examination_with_already_assigned_recording(self):
         self._require_jwt_cookies(self.user1)
         response = self.client.post("/api/examinations/", {
@@ -286,3 +287,79 @@ class TestExaminationsAPIViews(TestCase):
         response = self.client.patch(f"/api/examinations/{examination.id}/", {"recording": self.recording1.id})
         self.assertEqual(response.json(), {'detail': 'Another recording has already been assigned to chosen examination.'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        
+class TestGetDoctorStatistics(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+    def _require_jwt_cookies(self, user) -> None:
+        """Client will attach valid JWT Cookies - to be rewritten as method decorator"""
+        access, refresh = get_tokens_for_user(user=user)
+        self.client.cookies.load({
+            'access': access,
+            'refresh': refresh,
+        })
+
+    def test_is_doctor(self):
+        user1 = User.objects.create_user(
+            email="test12@gmail.com", password="test1",
+            first_name="", last_name="", type=User.Types.DOCTOR
+        )
+        self._require_jwt_cookies(user1)
+        response = self.client.get("/api/statistics/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_is_not_doctor(self):
+        user1 = User.objects.create_user(
+            email="test13@gmail.com", password="test1",
+            first_name="", last_name="", type=User.Types.PATIENT
+        )
+        self._require_jwt_cookies(user1)
+        response = self.client.get("/api/statistics/")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_pending_examinations(self):
+        user1 = User.objects.create_user(
+            email="test14@gmail.com", password="test1",
+            first_name="", last_name="", type=User.Types.DOCTOR
+        )
+        user2 = User.objects.create_user(
+            email="test21@gmail.com", password="test1",
+            first_name="", last_name="", type=User.Types.PATIENT
+        )
+        user3 = User.objects.create_user(
+            email="test31@gmail.com", password="test1",
+            first_name="", last_name="", type=User.Types.PATIENT
+        )
+        user4 = User.objects.create_user(
+            email="test41@gmail.com", password="test1",
+            first_name="", last_name="", type=User.Types.PATIENT
+        )
+        user5 = User.objects.create_user(
+            email="test51@gmail.com", password="test1",
+            first_name="", last_name="", type=User.Types.PATIENT
+        )
+        user6 = User.objects.create_user(
+            email="test61@gmail.com", password="test1",
+            first_name="", last_name="", type=User.Types.PATIENT
+        )
+        user7 = User.objects.create_user(
+            email="test71@gmail.com", password="test1",
+            first_name="", last_name="", type=User.Types.PATIENT
+        )
+        Examination.objects.create(doctor=user1, patient=user2, date=timezone.now() + timedelta(days=2), status="processing_succeeded")
+        Examination.objects.create(doctor=user1, patient=user3, date=timezone.now() + timedelta(days=12), status="scheduled")
+        Examination.objects.create(doctor=user1, patient=user4, date=timezone.now() + timedelta(days=8), status="processing_succeeded")
+        Examination.objects.create(doctor=user1, patient=user5, date=timezone.now() + timedelta(days=4), status="scheduled")
+        Examination.objects.create(doctor=user1, patient=user6, date=timezone.now() + timedelta(days=11), status="file_processing")
+        Examination.objects.create(doctor=user1, patient=user7, date=timezone.now() + timedelta(days=3), status="file_uploaded")
+        Examination.objects.create(doctor=user1, patient=user5, date=timezone.now() + timedelta(days=2), status="processing_failed")
+        Examination.objects.create(doctor=user1, patient=user4, date=timezone.now() + timedelta(days=4), status="scheduled")
+        self._require_jwt_cookies(user1)
+        response = self.client.get("/api/statistics/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), {'examinaton_count': 8,
+                                           'patients_related_count': 6,
+                                           'examinations_scheduled_count': 6,
+                                           'examinations_next_week_count': 4})
