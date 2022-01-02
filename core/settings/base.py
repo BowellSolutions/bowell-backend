@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # django utils
-
+    'django_filters',
     # cors headers
     'corsheaders',
     # rest framework
