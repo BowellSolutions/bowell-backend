@@ -89,7 +89,7 @@ class TestExaminationsAPIViews(TestCase):
         response = self.client.get("/api/examinations/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_list_examinations_empty(self):
+    def test_list_current_examinations(self):
         self._require_jwt_cookies(user=self.user1)
         response = self.client.get("/api/examinations/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -144,13 +144,23 @@ class TestExaminationsAPIViews(TestCase):
         self._require_jwt_cookies(self.user1)
         response = self.client.post("/api/examinations/", {
             'patient': self.user2.id,
-            'recording': self.recording1.id,
             'doctor': self.user1.id,
-            'date': timezone.now() + timedelta(days=1)
+            'date': timezone.now() + timedelta(days=1),
+            'recording': self.recording1.id  # unnecessary attribute
         })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         examination = Examination.objects.get(id=response.json()['id'])
         self.assertNotEqual(examination.recording, self.recording1)
+
+    def test_create_examination_with_wrong_date(self):
+        self._require_jwt_cookies(self.user1)
+        response = self.client.post("/api/examinations/", {
+            'patient': self.user2.id,
+            'recording': self.recording1.id,
+            'doctor': self.user1.id,
+            'date': timezone.now()
+        })
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_update_examination_one_attribute(self):
         self._require_jwt_cookies(self.user1)
