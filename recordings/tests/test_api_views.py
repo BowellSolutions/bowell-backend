@@ -18,6 +18,8 @@ from examinations.models import Examination
 from recordings.models import Recording
 from recordings.serializers import RecordingBeforeAnalysisSerializer, RecordingAfterAnalysisSerializer
 from users.utils import get_tokens_for_user
+from datetime import timedelta
+
 
 TEST_FILES_DIR = os.path.join(settings.BASE_DIR.parent, 'test_files')
 
@@ -82,6 +84,24 @@ class TestRecordingsAPIViews(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         file = Recording.objects.get(name="fart.wav")
         self.assertEqual(response.json(), RecordingBeforeAnalysisSerializer(file).data)
+
+    def test_create_recording_with_uploader(self):
+        self._require_jwt_cookies(self.user1)
+
+        with open(f'{TEST_FILES_DIR}/test.wav', 'wb+') as fp:
+            fp.write(b'xd')
+            fp.seek(0)
+            response = self.client.post("/api/recordings/", {
+                'file': fp,
+                'uploader': self.user1.id,
+                'name': 'fart.wav',
+                'examination': self.exam1.id
+            }, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        file = Recording.objects.get(name="fart.wav")
+        self.assertEqual(response.json(), RecordingBeforeAnalysisSerializer(file).data)
+
+
 
     def test_create_recording_empty(self):
         self._require_jwt_cookies(self.user1)
@@ -161,7 +181,7 @@ class TestRecordingsAPIViews(TestCase):
             }, format="multipart")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        exam2 = Examination.objects.create(doctor=self.user1, date=timezone.now())
+        exam2 = Examination.objects.create(doctor=self.user1, date=timezone.now()+timedelta(days=1))
 
         with open(f'{TEST_FILES_DIR}/test.wav', 'wb+') as fp:
             fp.write(b'xd')
@@ -174,9 +194,8 @@ class TestRecordingsAPIViews(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.get("/api/recordings/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # to do test response with serialized data
 
-    def test_list_recordings_empty(self):
+    def test_list_current_recordings(self):
         self._require_jwt_cookies(user=self.user1)
         response = self.client.get("/api/recordings/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -224,6 +243,8 @@ class TestRecordingsAPIViews(TestCase):
         }
                                      )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        file = Recording.objects.get(name="fart.wav")
+        self.assertEqual(response.json(), RecordingAfterAnalysisSerializer(file).data)
 
     def test_update_recording_file_multiple_attributes(self):
         self._require_jwt_cookies(self.user1)

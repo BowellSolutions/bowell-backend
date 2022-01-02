@@ -64,10 +64,12 @@ class RecordingCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recording
 
-        fields = ('file', 'name', 'examination')
+        fields = ('file', 'name', 'examination', 'uploader')
 
 
 class RecordingAfterAnalysisSerializer(serializers.ModelSerializer):
+    uploader = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
         model = Recording
         exclude = ('file', 'name')
@@ -88,7 +90,7 @@ class RecordingBeforeAnalysisSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recording
-        fields = ('id', 'file', 'name', 'uploaded_at', 'examination')
+        fields = ('id', 'file', 'name', 'uploaded_at', 'examination', 'uploader')
 
 
 class ListRecordingsBeforeAnalysisSerializer(serializers.ModelSerializer):
@@ -107,4 +109,4 @@ class ListRecordingsBeforeAnalysisSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recording
-        fields = ('id', 'file', 'name', 'uploaded_at', 'examination')
+        fields = ('id', 'file', 'name', 'uploaded_at', 'examination', 'uploader')

@@ -166,7 +166,6 @@ class JWTLogoutView(APIView):
         )
 
 
-# to do tests
 class UserViewSet(viewsets.ModelViewSet):
     """
     GET     /api/users/          - list all users

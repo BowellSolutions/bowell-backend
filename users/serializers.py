@@ -1,8 +1,11 @@
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import (
     TokenRefreshSerializer, TokenVerifySerializer
 )
+
+from users.validators import birth_date_validator
 
 User = get_user_model()
 
@@ -58,7 +61,7 @@ class RegisterUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, style={'input_type': 'password'})
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=True)
-    birth_date = serializers.DateField(required=True)
+    birth_date = serializers.DateField(required=True, validators=[birth_date_validator])
 
     class Meta:
         model = User
@@ -83,6 +86,7 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         if user.type == user.Types.DOCTOR:
             # do not activate doctor account
             user.is_active = False
+            user.save(update_fields=['is_active'])
         return user
 
     def to_representation(self, instance):
