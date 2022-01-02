@@ -80,6 +80,9 @@ class RegisterUserSerializer(serializers.ModelSerializer):
             birth_date=validated_data['birth_date'],
             type=validated_data['type'],
         )
+        if user.type == user.Types.DOCTOR:
+            # do not activate doctor account
+            user.is_active = False
         return user
 
     def to_representation(self, instance):
