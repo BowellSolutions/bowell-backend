@@ -61,8 +61,21 @@ class ExaminationUpdateSerializer(serializers.ModelSerializer):
     patient = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(type=User.Types.PATIENT))
     doctor = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(type=User.Types.DOCTOR))
 
+    def update(self, instance, validated_data):
+        if 'recording' in validated_data:
+            examination = Examination.objects.filter(recording=validated_data['recording'])
+            if examination.exists():
+                raise serializers.ValidationError(
+                    {'detail': 'Another recording has already been assigned to chosen examination.'})
+
+        return super().update(instance, validated_data)
+
+
     def to_representation(self, instance):
         return ExaminationSerializer(instance).data
+
+
+
 
     class Meta:
         model = Examination

@@ -1,12 +1,15 @@
+from datetime import timedelta
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.utils import timezone
 from rest_framework.status import (
-    HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
+    HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_201_CREATED
 )
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
 
-from users.serializers import UserSerializer
+from users.serializers import UserSerializer, RegisterUserSerializer
 from users.utils import get_tokens_for_user
 
 User = get_user_model()
@@ -175,7 +178,181 @@ class TestUsersViews(TestCase):
             }
         )
 
-    def test_users_doctor_filter(self):
+    def test_create_doctor(self):
+        response = self.client.post('/api/users/', {
+            'email': 'test@gmail5.com',
+            'password': 'testing1234',
+            'first_name': 'abc',
+            'last_name': 'abc',
+            'birth_date': '2020-10-11',
+            'type': User.Types.DOCTOR,
+        })
+        self.assertEqual(response.status_code, HTTP_201_CREATED)
+        user = User.objects.get(email="test@gmail5.com")
+        self.assertEqual(response.json(), RegisterUserSerializer(user).data)
+
+    def test_create_patient(self):
+        response = self.client.post('/api/users/', {
+            'email': 'test@gmail1.com',
+            'password': 'testing1234',
+            'first_name': 'abc',
+            'last_name': 'abc',
+            'birth_date': '2020-10-11',
+            'type': User.Types.PATIENT,
+        })
+        self.assertEqual(response.status_code, HTTP_201_CREATED)
+        user = User.objects.get(email="test@gmail1.com")
+        self.assertEqual(response.json(), RegisterUserSerializer(user).data)
+
+    def test_create_user_empty(self):
+        response = self.client.post('/api/users/', {
+        })
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+
+    def test_check_if_registered_doctor_active(self):
+        response = self.client.post('/api/users/', {
+            'email': 'test@gmail1234.com',
+            'first_name': 'abc',
+            'last_name': 'abc',
+            'password': 'testing1234',
+            'birth_date': '2020-10-11',
+            'type': User.Types.DOCTOR,
+        })
+        self.assertEqual(response.status_code, HTTP_201_CREATED)
+        user = User.objects.get(email="test@gmail1234.com")
+        self.assertEqual(user.is_active, False)
+
+    def test_create_doctor_with_wrong_birth_date(self):
+        response = self.client.post('/api/users/', {
+            'email': 'test@gmail1234.com',
+            'first_name': 'abc',
+            'last_name': 'abc',
+            'password': 'testing1234',
+            'birth_date': timezone.now().date() + timedelta(days=2),
+            'type': User.Types.DOCTOR,
+        })
+        #print(response.json())
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+
+    def test_create_user_without_email(self):
+        response = self.client.post('/api/users/', {
+            'first_name': 'abc',
+            'last_name': 'abc',
+            'password': 'testing1234',
+            'birth_date': '2020-10-11',
+            'type': User.Types.DOCTOR,
+        })
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+
+    def test_create_user_without_first_name(self):
+        response = self.client.post('/api/users/', {
+            'last_name': 'abc',
+            'password': 'testing1234',
+            'birth_date': '2020-10-11',
+            'type': User.Types.DOCTOR,
+        })
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+
+    def test_create_user_without_last_name(self):
+        response = self.client.post('/api/users/', {
+            'first_name': 'abc',
+            'password': 'testing1234',
+            'birth_date': '2020-10-11',
+            'type': User.Types.DOCTOR,
+        })
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+
+    def test_create_user_without_birth_date(self):
+        response = self.client.post('/api/users/', {
+            'first_name': 'abc',
+            'last_name': 'abc',
+            'password': 'testing1234',
+            'type': User.Types.DOCTOR,
+        })
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+
+    def test_create_user_without_type(self):
+        response = self.client.post('/api/users/', {
+            'first_name': 'abc',
+            'last_name': 'abc',
+            'password': 'testing1234',
+            'birth_date': '2020-10-11',
+        })
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+
+    def test_create_user_without_password(self):
+        response = self.client.post('/api/users/', {
+            'email': 'test@gmail.com',
+            'first_name': 'abc',
+            'last_name': 'abc',
+            'birth_date': '2020-10-11',
+            'type': User.Types.DOCTOR,
+        })
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+
+    def test_list_users(self):
+        self._require_jwt_cookies(self.user)
+
+        response = self.client.post('/api/users/', {
+            'email': 'test@gmail6.com',
+            'password': 'testing1234',
+            'first_name': 'abc',
+            'last_name': 'abc',
+            'birth_date': '2020-10-11',
+            'type': User.Types.PATIENT,
+        })
+        self.assertEqual(response.status_code, HTTP_201_CREATED)
+        response = self.client.get('/api/users/')
+        self.assertEqual(response.status_code, HTTP_200_OK)
+
+    def test_list_current_users(self):
+        self._require_jwt_cookies(self.user)
+        response = self.client.get('/api/users/')
+        self.assertEqual(response.status_code, HTTP_200_OK)
+
+    def test_deny_update_patch_user(self):
+        response = self.client.post('/api/users/', {
+            'email': 'test@gmail15.com',
+            'password': 'testing1234',
+            'first_name': 'abc',
+            'last_name': 'abc',
+            'birth_date': '2020-10-11',
+            'type': User.Types.PATIENT,
+        })
+        self.assertEqual(response.status_code, HTTP_201_CREATED)
+        user = User.objects.get(email="test@gmail15.com")
+        response = self.client.patch(f'/api/users/{user.id}/', {'first_name': 'bca'})
+        self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
+
+    def test_deny_update_put_user(self):
+        response = self.client.post('/api/users/', {
+            'email': 'test@gmail15.com',
+            'password': 'testing1234',
+            'first_name': 'abc',
+            'last_name': 'abc',
+            'birth_date': '2020-10-11',
+            'type': User.Types.PATIENT,
+        })
+        self.assertEqual(response.status_code, HTTP_201_CREATED)
+        user = User.objects.get(email="test@gmail15.com")
+        response = self.client.put(f'/api/users/{user.id}/', {'first_name': 'bca'})
+        self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
+
+    def test_deny_delete_user(self):
+        response = self.client.post('/api/users/', {
+            'email': 'test@gmail15.com',
+            'password': 'testing1234',
+            'first_name': 'abc',
+            'last_name': 'abc',
+            'birth_date': '2020-10-11',
+            'type': User.Types.PATIENT,
+        })
+        self.assertEqual(response.status_code, HTTP_201_CREATED)
+        user = User.objects.get(email="test@gmail15.com")
+        response = self.client.delete(f'/api/users/{user.id}/')
+        self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
+        
+          def test_users_doctor_filter(self):
         self._require_jwt_cookies(user=self.user)
         user1 = User.objects.create_user(
             email="test11@gmail.com", password="test1",
@@ -241,5 +418,3 @@ class TestUsersViews(TestCase):
         )
         response = self.client.get('/api/users/?type=APPLE')
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
-
-    # to do: test UserViewSet
