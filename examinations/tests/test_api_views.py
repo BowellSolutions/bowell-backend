@@ -6,6 +6,7 @@ examinations app testing.
 
 import os
 import shutil
+from datetime import timedelta
 from pathlib import Path
 
 from django.conf import settings
@@ -82,7 +83,7 @@ class TestExaminationsAPIViews(TestCase):
         response = self.client.post("/api/examinations/", {
             'patient': self.user2.id,
             'doctor': self.user1.id,
-            'date': timezone.now()
+            'date': timezone.now() + timedelta(days=1)
         })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.get("/api/examinations/")
@@ -100,7 +101,7 @@ class TestExaminationsAPIViews(TestCase):
         response = self.client.post("/api/examinations/", {
             'patient': self.user2.id,
             'doctor': self.user1.id,
-            'date': timezone.now()
+            'date': timezone.now() + timedelta(days=1)
         })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -134,7 +135,8 @@ class TestExaminationsAPIViews(TestCase):
         response = self.client.post("/api/examinations/", {
             'patient': user2.id,
             'doctor': self.user1.id,
-            'date': timezone.now()
+            'date': timezone.now() + timedelta(days=1)
+
         })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -144,7 +146,7 @@ class TestExaminationsAPIViews(TestCase):
             'patient': self.user2.id,
             'recording': self.recording1.id,
             'doctor': self.user1.id,
-            'date': timezone.now()
+            'date': timezone.now() + timedelta(days=1)
         })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         examination = Examination.objects.get(id=response.json()['id'])
@@ -156,7 +158,7 @@ class TestExaminationsAPIViews(TestCase):
         response = self.client.post("/api/examinations/", {
             'patient': self.user2.id,
             'doctor': self.user1.id,
-            'date': timezone.now()
+            'date': timezone.now() + timedelta(days=1)
         })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         examination = Examination.objects.get(doctor=self.user1)
@@ -172,7 +174,8 @@ class TestExaminationsAPIViews(TestCase):
         response = self.client.post("/api/examinations/", {
             'patient': self.user2.id,
             'doctor': self.user1.id,
-            'date': timezone.now()
+            'date': timezone.now() + timedelta(days=1)
+
         })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         examination = Examination.objects.get(doctor=self.user1)
@@ -190,7 +193,7 @@ class TestExaminationsAPIViews(TestCase):
         response = self.client.post("/api/examinations/", {
             'patient': self.user2.id,
             'doctor': self.user1.id,
-            'date': timezone.now()
+            'date': timezone.now() + timedelta(days=1)
         })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         examination = Examination.objects.get(doctor=self.user1)
@@ -206,7 +209,7 @@ class TestExaminationsAPIViews(TestCase):
         response = self.client.post("/api/examinations/", {
             'patient': self.user2.id,
             'doctor': self.user1.id,
-            'date': timezone.now()
+            'date': timezone.now() + timedelta(days=1)
         })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         examination = Examination.objects.get(doctor=self.user1)
@@ -224,7 +227,8 @@ class TestExaminationsAPIViews(TestCase):
         response = self.client.post("/api/examinations/", {
             'patient': self.user2.id,
             'doctor': self.user1.id,
-            'date': timezone.now()
+            'date': timezone.now() + timedelta(days=1)
+
         })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         examination = Examination.objects.get(doctor=self.user1)
@@ -240,7 +244,8 @@ class TestExaminationsAPIViews(TestCase):
         response = self.client.post("/api/examinations/", {
             'patient': self.user2.id,
             'doctor': self.user1.id,
-            'date': timezone.now()
+            'date': timezone.now() + timedelta(days=1)
+
         })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         examination = Examination.objects.get(doctor=self.user1)
