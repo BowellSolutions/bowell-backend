@@ -5,6 +5,7 @@ of Recording class. Class has no relation dependent
 attributes, only those necessary for full model definition.
 """
 from django.conf import settings
+from django.core.validators import FileExtensionValidator
 from django.db import models
 
 
@@ -15,7 +16,7 @@ class Recording(models.Model):
         blank=True,
         null=True)
 
-    file = models.FileField(upload_to='recordings')
+    file = models.FileField(upload_to='recordings', validators=[FileExtensionValidator(['wav'])])
     name = models.CharField(max_length=255)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     latest_analysis_date = models.DateTimeField(auto_now=True, blank=True, null=True)
