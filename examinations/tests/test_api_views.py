@@ -93,7 +93,7 @@ class TestExaminationsAPIViews(TestCase):
         self._require_jwt_cookies(user=self.user1)
         response = self.client.get("/api/examinations/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()['results'],[])
+        self.assertEqual(response.json()['results'], [])
 
     def test_create_examination(self):
         self._require_jwt_cookies(self.user1)
@@ -264,7 +264,7 @@ class TestExaminationsAPIViews(TestCase):
             'mass_kg': 1000,
         })
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        
+
     def test_update_examination_with_already_assigned_recording(self):
         self._require_jwt_cookies(self.user1)
         response = self.client.post("/api/examinations/", {
@@ -284,7 +284,8 @@ class TestExaminationsAPIViews(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         examination = Examination.objects.get(id=response.json()['id'])
         response = self.client.patch(f"/api/examinations/{examination.id}/", {"recording": self.recording1.id})
-        self.assertEqual(response.json(), {'detail': 'Another recording has already been assigned to chosen examination.'})
+        self.assertEqual(response.json(),
+                         {'detail': 'Another recording has already been assigned to chosen examination.'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_is_doctor(self):
@@ -334,26 +335,39 @@ class TestExaminationsAPIViews(TestCase):
             email="test71@gmail.com", password="test1",
             first_name="", last_name="", type=User.Types.PATIENT
         )
-        Examination.objects.create(doctor=user1, patient=user2, date=timezone.now() + timedelta(days=2),
-                                   status="processing_succeeded")
-        Examination.objects.create(doctor=user1, patient=user3, date=timezone.now() + timedelta(days=12),
-                                   status="scheduled")
-        Examination.objects.create(doctor=user1, patient=user4, date=timezone.now() + timedelta(days=8),
-                                   status="processing_succeeded")
-        Examination.objects.create(doctor=user1, patient=user5, date=timezone.now() + timedelta(days=4),
-                                   status="scheduled")
-        Examination.objects.create(doctor=user1, patient=user6, date=timezone.now() + timedelta(days=11),
-                                   status="file_processing")
-        Examination.objects.create(doctor=user1, patient=user7, date=timezone.now() + timedelta(days=3),
-                                   status="file_uploaded")
-        Examination.objects.create(doctor=user1, patient=user5, date=timezone.now() + timedelta(days=2),
-                                   status="processing_failed")
-        Examination.objects.create(doctor=user1, patient=user4, date=timezone.now() + timedelta(days=4),
-                                   status="scheduled")
+        Examination.objects.create(
+            doctor=user1, patient=user2, date=timezone.now() + timedelta(days=2), status="processing_succeeded"
+        )
+        Examination.objects.create(
+            doctor=user1, patient=user3, date=timezone.now() + timedelta(days=12), status="scheduled"
+        )
+        Examination.objects.create(
+            doctor=user1, patient=user4, date=timezone.now() + timedelta(days=8), status="processing_succeeded"
+        )
+        Examination.objects.create(
+            doctor=user1, patient=user5, date=timezone.now() + timedelta(days=4), status="scheduled"
+        )
+        Examination.objects.create(
+            doctor=user1, patient=user6, date=timezone.now() + timedelta(days=11), status="file_processing"
+        )
+        Examination.objects.create(
+            doctor=user1, patient=user7, date=timezone.now() + timedelta(days=3), status="file_uploaded"
+        )
+        Examination.objects.create(
+            doctor=user1, patient=user5, date=timezone.now() + timedelta(days=2), status="processing_failed"
+        )
+        Examination.objects.create(
+            doctor=user1, patient=user4, date=timezone.now() + timedelta(days=4), status="scheduled"
+        )
         self._require_jwt_cookies(user1)
         response = self.client.get("/api/statistics/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json(), {'examinaton_count': 8,
-                                           'patients_related_count': 6,
-                                           'examinations_scheduled_count': 6,
-                                       'examinations_next_week_count': 4})
+        self.assertEqual(
+            response.json(),
+            {
+                'examination_count': 8,
+                'patients_related_count': 6,
+                'examinations_scheduled_count': 6,
+                'examinations_next_week_count': 4
+            }
+        )

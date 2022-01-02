@@ -9,13 +9,18 @@ from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-from rest_framework import mixins, viewsets, status
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 from rest_framework.views import APIView
 
 from .models import Examination
 from .serializers import ExaminationSerializer, ExaminationCreateSerializer, ExaminationUpdateSerializer
+from .swagger import DoctorStatisticsResponse
 
 User = get_user_model()
 
@@ -57,24 +62,39 @@ class ExaminationViewSet(
 
 class GetDoctorStatistics(APIView):
     """
-        GET     /api/statistics/ - get doctor stats
+    GET     /api/statistics/ - get doctor statistics (examinations and patients count)
     """
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
+    @swagger_auto_schema(responses={
+        HTTP_200_OK: openapi.Response('OK', DoctorStatisticsResponse),
+        HTTP_403_FORBIDDEN: "Permission denied!"
+    })
+    def get(self, request: Request, *args, **kwargs) -> Response:
         if self.request.user.type != "DOCTOR":
-            return Response({'message': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'message': 'Permission denied!'}, status=HTTP_403_FORBIDDEN)
+
+        excluded_statuses = ["cancelled", "processing_succeeded"]
+
         examination_pending = Examination.objects.filter(doctor=self.request.user).exclude(
-            status__in=["cancelled", "processing_succeeded"]).count()
+            status__in=excluded_statuses
+        ).count()
+
         patients_related = Examination.objects.filter(doctor=self.request.user).distinct("patient").count()
+
         examination_next_week = Examination.objects.filter(
             doctor=self.request.user, date__gte=timezone.now(),
-            date__lte=timezone.now() + timedelta(days=7)).exclude(
-            status__in=["cancelled", "processing_succeeded"]
-        ).count()
-        examinaton_count = Examination.objects.filter(doctor=self.request.user).count()
-        return Response({'examinaton_count': examinaton_count,
-                         'patients_related_count': patients_related,
-                         'examinations_scheduled_count': examination_pending,
-                         'examinations_next_week_count': examination_next_week},
-                        status=status.HTTP_200_OK)
+            date__lte=timezone.now() + timedelta(days=7)
+        ).exclude(status__in=excluded_statuses).count()
+
+        examination_count = Examination.objects.filter(doctor=self.request.user).count()
+
+        return Response(
+            {
+                'examination_count': examination_count,
+                'patients_related_count': patients_related,
+                'examinations_scheduled_count': examination_pending,
+                'examinations_next_week_count': examination_next_week
+            },
+            status=HTTP_200_OK
+        )
