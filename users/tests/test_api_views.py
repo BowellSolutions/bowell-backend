@@ -352,68 +352,68 @@ class TestUsersViews(TestCase):
         response = self.client.delete(f'/api/users/{user.id}/')
         self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
         
-          def test_users_doctor_filter(self):
+    def test_users_doctor_filter(self):
         self._require_jwt_cookies(user=self.user)
-        user1 = User.objects.create_user(
+        User.objects.create_user(
             email="test11@gmail.com", password="test1",
             first_name="", last_name="", type=User.Types.DOCTOR
         )
-        user2 = User.objects.create_user(
+        User.objects.create_user(
             email="test21@gmail.com", password="test1",
             first_name="", last_name="", type=User.Types.DOCTOR
         )
-        user3 = User.objects.create_user(
+        User.objects.create_user(
             email="test31@gmail.com", password="test1",
             first_name="", last_name="", type=User.Types.PATIENT
         )
-        user4 = User.objects.create_user(
+        User.objects.create_user(
             email="test41@gmail.com", password="test1",
             first_name="", last_name="", type=User.Types.PATIENT
         )
         response = self.client.get('/api/users/?type=DOCTOR')
         self.assertEqual(response.status_code, HTTP_200_OK)
         result = User.objects.filter(type='DOCTOR')
-        self.assertEqual(response.json(), UserSerializer(result, many=True).data)
+        self.assertEqual(response.json()['results'], UserSerializer(result, many=True).data)
 
     def test_users_patient_filter(self):
         self._require_jwt_cookies(user=self.user)
-        user1 = User.objects.create_user(
+        User.objects.create_user(
             email="test12@gmail.com", password="test1",
             first_name="", last_name="", type=User.Types.DOCTOR
         )
-        user2 = User.objects.create_user(
+        User.objects.create_user(
             email="test22@gmail.com", password="test1",
             first_name="", last_name="", type=User.Types.DOCTOR
         )
-        user3 = User.objects.create_user(
+        User.objects.create_user(
             email="test32@gmail.com", password="test1",
             first_name="", last_name="", type=User.Types.PATIENT
         )
-        user4 = User.objects.create_user(
+        User.objects.create_user(
             email="test42@gmail.com", password="test1",
             first_name="", last_name="", type=User.Types.PATIENT
         )
         response = self.client.get('/api/users/?type=PATIENT')
         self.assertEqual(response.status_code, HTTP_200_OK)
         result = User.objects.filter(type='PATIENT')
-        self.assertEqual(response.json(), UserSerializer(result, many=True).data)
+        self.assertEqual(response.json()['results'], UserSerializer(result, many=True).data)
 
     def test_users_bad_filter(self):
         self._require_jwt_cookies(user=self.user)
-        user1 = User.objects.create_user(
+        User.objects.create_user(
             email="test13@gmail.com", password="test1",
             first_name="", last_name="", type=User.Types.DOCTOR
         )
-        user2 = User.objects.create_user(
+        User.objects.create_user(
             email="test23@gmail.com", password="test1",
             first_name="", last_name="", type=User.Types.DOCTOR
         )
-        user3 = User.objects.create_user(
+        User.objects.create_user(
             email="test33@gmail.com", password="test1",
             first_name="", last_name="", type=User.Types.PATIENT
         )
-        user4 = User.objects.create_user(
-            email="test43@gmail.com", password="test1",
+        User.objects.create_user(
+            email="test45@gmail.com", password="test1",
             first_name="", last_name="", type=User.Types.PATIENT
         )
         response = self.client.get('/api/users/?type=APPLE')

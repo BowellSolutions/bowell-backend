@@ -20,7 +20,6 @@ from recordings.serializers import RecordingBeforeAnalysisSerializer, RecordingA
 from users.utils import get_tokens_for_user
 from datetime import timedelta
 
-
 TEST_FILES_DIR = os.path.join(settings.BASE_DIR.parent, 'test_files')
 
 User = get_user_model()
@@ -34,7 +33,8 @@ class TestRecordingsAPIViews(TestCase):
     @classmethod
     def setUpTestData(cls):
         # create data before running any tests
-        cls.user1 = User.objects.create(username="test2", password="test1")
+        cls.user1 = User.objects.create_user(email="test43@gmail.com", password="test1",
+                                             first_name="", last_name="", type=User.Types.PATIENT)
         cls.exam1 = Examination.objects.create(doctor=cls.user1, date=timezone.now())
 
         # use test_files directory for writing files in tests
@@ -100,8 +100,6 @@ class TestRecordingsAPIViews(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         file = Recording.objects.get(name="fart.wav")
         self.assertEqual(response.json(), RecordingBeforeAnalysisSerializer(file).data)
-
-
 
     def test_create_recording_empty(self):
         self._require_jwt_cookies(self.user1)
@@ -181,7 +179,7 @@ class TestRecordingsAPIViews(TestCase):
             }, format="multipart")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        exam2 = Examination.objects.create(doctor=self.user1, date=timezone.now()+timedelta(days=1))
+        exam2 = Examination.objects.create(doctor=self.user1, date=timezone.now() + timedelta(days=1))
 
         with open(f'{TEST_FILES_DIR}/test.wav', 'wb+') as fp:
             fp.write(b'xd')
