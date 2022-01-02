@@ -5,6 +5,7 @@ from celery import shared_task
 from analysis.celery import app
 from recordings.models import Recording
 from django.conf import settings
+import random
 
 
 @shared_task
@@ -80,11 +81,14 @@ def process_recording(recording_id: int, up_path):
     path = up_path
 
     if settings.CELERY_USE_MOCK_MODEL:
-        data = call_mock()
+        response = call_mock()
+        data = response["statistics"]["Main results"]
+        recording = Recording.objects.filter(id=recording_id).update(**data, probability_plot=response["frames"])
+        return recording
     else:
         data = call_model(path)
-    recording = Recording.objects.filter(id=recording_id).update(**data)
-    return recording
+        recording = Recording.objects.filter(id=recording_id).update(**data)
+        return recording
 
 
 def call_model(file_path: str):
@@ -99,11 +103,15 @@ def call_model(file_path: str):
 
     raw_data = data["frames"]
 
-    # TODO: Save raw_data to db
     stats = data["statistics"]["Main results"]
 
-    return {v: stats[k] for k, v in mapper.items()}
+    results = {v: stats[k] for k, v in mapper.items()}
+    results["probability_plot"] = raw_data
+    return results
 
 
 def call_mock():
-    return model_mock
+    frames = [{"start": round(i / 1000, 2), "probability": random.random()} for i in range(0, 1000, 1)]
+
+    results = {"code": 200, "error": "", "frames": frames, "statistics": {"Main results": model_mock}}
+    return results
