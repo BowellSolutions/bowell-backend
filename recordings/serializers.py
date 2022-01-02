@@ -47,12 +47,13 @@ class RecordingCreateSerializer(serializers.ModelSerializer):
         return RecordingBeforeAnalysisSerializer(instance).data
 
     def create(self, validated_data):
-        instance = super().create(validated_data)
         examination = validated_data.get('examination')
         if examination.recording is not None:
             raise serializers.ValidationError(
                 {'detail': 'Another recording has already been assigned to chosen examination.'})
         else:
+            validated_data['uploader'] = self._user
+            instance = super().create(validated_data)
             examination.recording = instance
             examination.save()
 
@@ -64,7 +65,7 @@ class RecordingCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recording
 
-        fields = ('file', 'name', 'examination', 'uploader')
+        fields = ('file', 'name', 'examination')
 
 
 class RecordingAfterAnalysisSerializer(serializers.ModelSerializer):

@@ -80,3 +80,5 @@ class Recording(models.Model):
     sounds_per_minute_vs_sound_index_scatterplot = models.BinaryField(blank=True, null=True)
     sounds_per_minute_vs_sound_duration_scatterplot = models.BinaryField(blank=True, null=True)
     sound_index_vs_duration_scatterplot = models.BinaryField(blank=True, null=True)
+
+    probability_plot = models.JSONField(blank=True, null=True)
