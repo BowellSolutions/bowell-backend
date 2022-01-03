@@ -43,10 +43,10 @@ jobs:
       - name: Wait for Postgres
         run: python manage.py wait_for_db
       - name: Debug
-        run: pwd && ls && python manage.py dbshell
+        run: python manage.py dbshell
       - name: Django tests
         run: |
-          coverage run manage.py test
+          python ./manage.py test
       - name: Tests coverage
         run: |
           coverage report -m
