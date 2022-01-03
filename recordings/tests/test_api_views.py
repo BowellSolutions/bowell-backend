@@ -34,7 +34,7 @@ class TestRecordingsAPIViews(TestCase):
     def setUpTestData(cls):
         # create data before running any tests
         cls.user1 = User.objects.create_user(email="test43@gmail.com", password="test1",
-                                             first_name="", last_name="", type=User.Types.PATIENT)
+                                             first_name="", last_name="", type=User.Types.DOCTOR)
         cls.exam1 = Examination.objects.create(doctor=cls.user1, date=timezone.now())
 
         # use test_files directory for writing files in tests
@@ -318,8 +318,7 @@ class TestRecordingsAPIViews(TestCase):
         response = self.client.patch(f"/api/recordings/{file_id}/", {
             'bowell_sounds_number': bowell_sounds,
             'deviation_per_minute': deviation_per_minute
-        }
-                                     )
+        })
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_update_recording_file_wrong_attribute_chosen(self):
