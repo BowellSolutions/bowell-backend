@@ -42,11 +42,9 @@ jobs:
         run: python manage.py migrate
       - name: Wait for Postgres
         run: python manage.py wait_for_db
-      - name: Debug
-        run: python manage.py dbshell
       - name: Django tests
         run: |
-          python ./manage.py test
+          coverage run manage.py test
       - name: Tests coverage
         run: |
           coverage report -m

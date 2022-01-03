@@ -99,6 +99,7 @@ ASGI_APPLICATION = 'core.asgi.application'
 
 # Github actions database
 if os.environ.get('GITHUB_WORKFLOW'):
+    print("Using github workflow database")
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
