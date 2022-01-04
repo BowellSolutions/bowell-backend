@@ -48,6 +48,11 @@ class RecordingCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         examination = validated_data.get('examination')
+        instance = super().create(validated_data)
+
+        process_recording.delay(instance.id, instance.file.path)
+
+        return instance
         if examination.recording is not None:
             raise serializers.ValidationError(
                 {'detail': 'Another recording has already been assigned to chosen examination.'})
