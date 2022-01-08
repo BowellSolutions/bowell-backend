@@ -26,6 +26,7 @@ from users.swagger import (
     CookieTokenObtainPairResponseSerializer, CookieTokenRefreshResponseSerializer,
     CookieTokenVerifyResponseSerializer
 )
+from users.utils import get_set_cookie_arguments
 
 User = get_user_model()
 
@@ -45,28 +46,11 @@ class JWTObtainPairView(TokenObtainPairView):
         """Returns the final response object."""
 
         if access := response.data.get('access'):
-            access_cookie_max_age = settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds()
-            response.set_cookie(
-                key=settings.SIMPLE_JWT['ACCESS_TOKEN_COOKIE'],
-                value=access,
-                max_age=access_cookie_max_age,
-                expires=access_cookie_max_age,
-                secure=not settings.DEBUG,
-                httponly=True,
-                samesite="None" if not settings.DEBUG else "Lax"
-            )
+            response.set_cookie(**get_set_cookie_arguments(token=access))
 
         if refresh := response.data.get('refresh'):
-            refresh_cookie_max_age = settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds()
-            response.set_cookie(
-                key=settings.SIMPLE_JWT['REFRESH_TOKEN_COOKIE'],
-                value=refresh,
-                max_age=refresh_cookie_max_age,
-                expires=refresh_cookie_max_age,
-                secure=not settings.DEBUG,
-                httponly=True,
-                samesite="None" if not settings.DEBUG else "Lax"
-            )
+            response.set_cookie(**get_set_cookie_arguments(token=refresh, is_access=False))
+
         return super().finalize_response(request, response, *args, **kwargs)
 
 
@@ -99,16 +83,8 @@ class JWTRefreshView(TokenRefreshView):
         """Returns the final response object."""
 
         if access_token := response.data.get('access'):
-            access_cookie_max_age = settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds()
-            response.set_cookie(
-                key=settings.SIMPLE_JWT['ACCESS_TOKEN_COOKIE'],
-                value=access_token,
-                max_age=access_cookie_max_age,
-                expires=access_cookie_max_age,
-                secure=not settings.DEBUG,
-                httponly=True,
-                samesite="None" if not settings.DEBUG else "Lax"
-            )
+            response.set_cookie(**get_set_cookie_arguments(token=access_token))
+
         return super().finalize_response(request, response, *args, **kwargs)
 
 
