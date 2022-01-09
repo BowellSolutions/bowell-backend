@@ -43,6 +43,6 @@ def get_set_cookie_arguments(token: str, is_access: bool = True, **kwargs):
         "secure": is_production,
         "httponly": True,
         # "samesite": "None" if is_production else "Lax",
-        # "domain": cookie_domain,
+        "domain": ".gddc.pl",
         **kwargs
     }
