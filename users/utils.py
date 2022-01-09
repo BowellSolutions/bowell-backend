@@ -29,6 +29,7 @@ def get_set_cookie_arguments(token: str, is_access: bool = True, **kwargs):
         cookie_domain = "." + ''.join(domain.split('.')[1:])
     else:
         cookie_domain = None
+    print("cookie_domain", cookie_domain)
 
     # token can either be access or refresh
     max_age = access_cookie_max_age if is_access else refresh_cookie_max_age
@@ -41,7 +42,7 @@ def get_set_cookie_arguments(token: str, is_access: bool = True, **kwargs):
         "expires": max_age,
         "secure": is_production,
         "httponly": True,
-        "samesite": "None" if is_production else "Lax",
-        "domain": cookie_domain,
+        # "samesite": "None" if is_production else "Lax",
+        # "domain": cookie_domain,
         **kwargs
     }

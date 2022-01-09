@@ -51,6 +51,8 @@ class JWTObtainPairView(TokenObtainPairView):
         if refresh := response.data.get('refresh'):
             response.set_cookie(**get_set_cookie_arguments(token=refresh, is_access=False))
 
+        print("/api/auth/token/ response cookies -> ", response.cookies)
+
         return super().finalize_response(request, response, *args, **kwargs)
 
 
@@ -84,6 +86,8 @@ class JWTRefreshView(TokenRefreshView):
 
         if access_token := response.data.get('access'):
             response.set_cookie(**get_set_cookie_arguments(token=access_token))
+
+        print("/api/auth/token/refresh/ response cookies -> ", response.cookies)
 
         return super().finalize_response(request, response, *args, **kwargs)
 
