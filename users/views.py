@@ -26,7 +26,7 @@ from users.swagger import (
     CookieTokenObtainPairResponseSerializer, CookieTokenRefreshResponseSerializer,
     CookieTokenVerifyResponseSerializer
 )
-from users.utils import get_set_cookie_arguments
+from users.utils import get_set_cookie_arguments, get_delete_cookie_arguments
 
 User = get_user_model()
 
@@ -50,8 +50,6 @@ class JWTObtainPairView(TokenObtainPairView):
 
         if refresh := response.data.get('refresh'):
             response.set_cookie(**get_set_cookie_arguments(token=refresh, is_access=False))
-
-        print("/api/auth/token/ response cookies -> ", response.cookies)
 
         return super().finalize_response(request, response, *args, **kwargs)
 
@@ -87,8 +85,6 @@ class JWTRefreshView(TokenRefreshView):
         if access_token := response.data.get('access'):
             response.set_cookie(**get_set_cookie_arguments(token=access_token))
 
-        print("/api/auth/token/refresh/ response cookies -> ", response.cookies)
-
         return super().finalize_response(request, response, *args, **kwargs)
 
 
@@ -101,7 +97,7 @@ class JWTVerifyView(TokenVerifyView):
     @swagger_auto_schema(responses={
         HTTP_200_OK: openapi.Response('OK', CookieTokenVerifyResponseSerializer)
     })
-    def post(self, request, *args, **kwargs) -> Response:
+    def post(self, request: Request, *args, **kwargs) -> Response:
         # if access cookie exists and token was not submitted via form/request
         if access := request.COOKIES.get('access') and not request.data.get('token'):
             _data = dict(request.data)
@@ -130,7 +126,9 @@ class JWTLogoutView(APIView):
     def get(self, request: Request, *args, **kwargs) -> Response:
         if refresh := request.COOKIES.get('refresh'):
             response = Response({'message': 'Logout successful!'}, status=HTTP_200_OK)
-            response.delete_cookie('access')
+
+            # delete access cookie
+            response.set_cookie(**get_delete_cookie_arguments())
 
             try:
                 refresh_token = RefreshToken(refresh)
@@ -139,7 +137,9 @@ class JWTLogoutView(APIView):
                 # if refresh token has already been blacklisted, then just delete refresh cookie
                 pass
 
-            response.delete_cookie('refresh')
+            # delete refresh cookie
+            response.set_cookie(**get_delete_cookie_arguments(is_access=False))
+
             return response
         return Response(
             {'message': 'Could not logout! Cookie \'refresh\' not found in request!'},
