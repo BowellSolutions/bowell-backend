@@ -180,6 +180,8 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_COOKIE': 'refresh',
 }
 
+COOKIE_DOMAIN = os.environ.get("COOKIE_DOMAIN")
+
 # CORS headers
 # https://pypi.org/project/django-cors-headers/
 

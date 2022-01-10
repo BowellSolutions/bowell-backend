@@ -143,8 +143,9 @@ SECRET_KEY
 STATIC_ROOT     # path to dir for storing static files
 MEDIA_ROOT      # path to dir for storing recordings 
 BACKEND_HOST    # e.g example.com
-BACKEND_URL     # e.g https://example.com
-FRONTEND_URL    # e.g https://example.com
+BACKEND_URL     # e.g https://api.example.domain.com
+FRONTEND_URL    # e.g https://example.domain.com
+COOKIE_DOMAIN   # e.g .domain.com
 DB_NAME
 DB_USER
 DB_PASSWORD
