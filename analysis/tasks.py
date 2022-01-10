@@ -1,18 +1,15 @@
-import time
+import asyncio
+import random
+
 import requests
-from celery import shared_task
+from celery.utils.log import get_task_logger
+from channels.layers import get_channel_layer
+from django.conf import settings
 
 from analysis.celery import app
 from recordings.models import Recording
-from django.conf import settings
-import random
 
-
-@shared_task
-def simple_task(x: int, y: int):
-    time.sleep(1)
-    return x + y
-
+logger = get_task_logger(__name__)
 
 mapper = {
     "% of bowel sounds followed by another bowel sound within 100 ms": "repetition_within_100ms",
@@ -30,6 +27,7 @@ mapper = {
     "Bowel sounds per minute, total": "total_sound_index",
     "Recording length, hours:minutes:seconds": "length",
 }
+
 model_mock = {
     'bowell_sounds_number': 0.01,
     'bowell_sounds_per_minute': 2.0,
@@ -76,19 +74,76 @@ model_mock = {
 }
 
 
-@app.task
-def process_recording(recording_id: int, up_path):
-    path = up_path
+async def send_websocket_message(group_name: str, message: dict):
+    """Sends websocket message via channel_layer"""
+
+    channel_layer = get_channel_layer()
+    await channel_layer.group_send(group_name, message)
+    logger.debug(f"sent message via channel_layer")
+
+
+@app.task(bind=True)
+def process_recording(self, recording_id: int, file_path: str):
+    logger.info(f"started processing of Recording ID={recording_id}")
+
+    # https://docs.celeryproject.org/en/stable/userguide/tasks.html#id7
+    req = self.request  # task details
+
+    # TODO: parameterize group_name
+    asyncio.run(
+        send_websocket_message(
+            group_name="user",
+            message={
+                "type": "echo",
+                "payload": f"started processing of recording with id: {recording_id}"
+            }
+        )
+    )
 
     if settings.CELERY_USE_MOCK_MODEL:
         response = call_mock()
-        data = response["statistics"]["Main results"]
-        recording = Recording.objects.filter(id=recording_id).update(**data, probability_plot=response["frames"])
-        return recording
-    else:
-        data = call_model(path)
+        logger.info("received response from ml model")
+
+        asyncio.run(
+            send_websocket_message(
+                group_name="user",
+                message={
+                    "type": "echo",
+                    "payload": "received response from model"
+                }
+            )
+        )
+
+        data = {
+            **response["statistics"]["Main results"],
+            "probability_plot": response["frames"]
+        }
+
         recording = Recording.objects.filter(id=recording_id).update(**data)
-        return recording
+
+        logger.info("successfully updated recording")
+        asyncio.run(
+            send_websocket_message(
+                group_name="user",
+                message={
+                    "type": "echo",
+                    "payload": "analysis complete!"
+                }
+            )
+        )
+    else:
+        data = call_model(file_path)
+        recording = Recording.objects.filter(id=recording_id).update(**data)
+        asyncio.run(
+            send_websocket_message(
+                group_name="user",
+                message={
+                    "type": "echo",
+                    "payload": "analysis complete!"
+                }
+            )
+        )
+    return recording
 
 
 def call_model(file_path: str):
@@ -97,12 +152,23 @@ def call_model(file_path: str):
     files = [
         ('file', open(file_path, 'rb'))
     ]
+    logger.info("sending request to ml model")
+
     response = requests.request("POST", url, files=files)
 
+    logger.info(f"received response from ml model, status {response.status_code}")
+    asyncio.run(
+        send_websocket_message(
+            group_name="user",
+            message={
+                "type": "echo",
+                "payload": "received response from model"
+            }
+        )
+    )
+
     data = response.json()
-
     raw_data = data["frames"]
-
     stats = data["statistics"]["Main results"]
 
     results = {v: stats[k] for k, v in mapper.items()}
@@ -111,7 +177,8 @@ def call_model(file_path: str):
 
 
 def call_mock():
+    # mocked frames used for probability plot
     frames = [{"start": round(i / 1000, 2), "probability": random.random()} for i in range(0, 1000, 1)]
-
+    # shape of actual model response
     results = {"code": 200, "error": "", "frames": frames, "statistics": {"Main results": model_mock}}
     return results
