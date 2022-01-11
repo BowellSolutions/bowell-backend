@@ -50,10 +50,12 @@ class DashboardConsumer(AsyncJsonWebsocketConsumer):
             logger.warning(f"WS INVALID COMMAND: {command}")
 
     async def disconnect(self, code):
-        await self.channel_layer.group_discard(
-            group=self.user_group_name,
-            channel=self.channel_name
-        )
+        if hasattr(self, "user_group_name"):
+            # discard group if it has been instantiated
+            await self.channel_layer.group_discard(
+                group=self.user_group_name,
+                channel=self.channel_name
+            )
 
     async def hello(self, event):
         message = event.get("message")
