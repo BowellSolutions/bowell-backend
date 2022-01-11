@@ -79,7 +79,7 @@ class ExaminationViewSet(
 
     @swagger_auto_schema(responses={HTTP_200_OK: openapi.Response('OK', ExaminationSerializer)})
     def update(self, request: Request, *args, **kwargs) -> Response:
-        return super().partial_update(request, *args, **kwargs)
+        return super().update(request, *args, **kwargs)
 
     @swagger_auto_schema(responses={HTTP_200_OK: openapi.Response('OK', ExaminationSerializer)})
     def partial_update(self, request: Request, *args, **kwargs) -> Response:
