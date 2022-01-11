@@ -7,18 +7,20 @@ and serializers, based on taken actions.
 """
 from django.contrib.auth import get_user_model
 from django.db.models import QuerySet
+from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 from .models import Recording
 from .serializers import (
     ListRecordingsBeforeAnalysisSerializer,
     RecordingAfterAnalysisSerializer,
-    RecordingCreateSerializer
+    RecordingCreateSerializer, 
+    RecordingBeforeAnalysisSerializer
 )
 
 User = get_user_model()
@@ -57,6 +59,12 @@ class RecordingViewSet(
         elif hasattr(self, 'action') and self.action in ('update', 'partial_update', 'retrieve'):
             return RecordingAfterAnalysisSerializer
         return super().get_serializer_class()
+
+    @swagger_auto_schema(responses={
+        HTTP_201_CREATED: openapi.Response('OK', RecordingBeforeAnalysisSerializer)}
+    )
+    def create(self, request: Request, *args, **kwargs) -> Response:
+        return super().create(request, *args, **kwargs)
 
     @swagger_auto_schema(responses={
         HTTP_200_OK: "Recording was successfully detached from examination.",

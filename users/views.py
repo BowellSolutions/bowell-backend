@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
@@ -8,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.status import (
-    HTTP_200_OK, HTTP_401_UNAUTHORIZED
+    HTTP_200_OK, HTTP_201_CREATED, HTTP_401_UNAUTHORIZED
 )
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
@@ -63,7 +62,7 @@ class JWTRefreshView(TokenRefreshView):
     @swagger_auto_schema(responses={
         HTTP_200_OK: openapi.Response('OK', CookieTokenRefreshResponseSerializer)
     })
-    def post(self, request, *args, **kwargs) -> Response:
+    def post(self, request: Request, *args, **kwargs) -> Response:
         # if refresh cookie exists and refresh was not submitted via form/request
         if refresh := request.COOKIES.get('refresh') and not request.data.get('refresh'):
             _data = dict(request.data)
@@ -179,6 +178,12 @@ class UserViewSet(viewsets.ModelViewSet):
             permission_classes = [IsAuthenticated, CurrentUserOrAdminPermission]
             return [permission() for permission in permission_classes]
         return super().get_permissions()
+
+    @swagger_auto_schema(responses={
+        HTTP_201_CREATED: openapi.Response('OK', UserSerializer)}
+    )
+    def create(self, request: Request, *args, **kwargs) -> Response:
+        return super().create(request, *args, **kwargs)
 
     @swagger_auto_schema(responses={
         HTTP_200_OK: openapi.Response('OK', UserSerializer)}
