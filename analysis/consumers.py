@@ -55,9 +55,10 @@ class DashboardConsumer(AsyncJsonWebsocketConsumer):
                 group=self.user_group_name,
                 channel=self.channel_name
             )
-        except AttributeError:
+        except AttributeError as e:
             # if consumer has no attribute user_group_name, then there is nothing to discard
-            pass
+            logger.warning("Dashboard Consumer - error while disconnecting")
+            logger.warning(e)
 
     async def hello(self, event):
         message = event.get("message")

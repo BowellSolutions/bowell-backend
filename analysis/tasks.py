@@ -83,8 +83,12 @@ async def send_websocket_message(group_name: str, message: dict):
     """Sends websocket message via channel_layer"""
 
     channel_layer = get_channel_layer()
-    await channel_layer.group_send(group_name, message)
-    logger.debug(f"sent message via channel_layer")
+    try:
+        await channel_layer.group_send(group_name, message)
+        logger.debug(f"sent message via channel_layer")
+    except Exception as e:
+        logger.warning("Failed to send a message via channel_layer.group_send")
+        logger.warning(e)
 
 
 class BaseTask(Task):
@@ -141,17 +145,6 @@ def process_recording(self, recording_id: int, file_path: str, user_id: int):
     examination.analysis_id = req.id
     examination.status = Examination.Statuses.file_processing
     examination.save(update_fields=['analysis_id', 'status'])
-
-    channel_layer = get_channel_layer()
-    logger.info("[TEST] channel_layer = ", channel_layer)
-    try:
-        async_to_sync(channel_layer.group_send)(f"user-{user_id}", {
-            "type": "notify",
-            "message": f"Started processing of recording with id: {recording_id}"
-        })
-    except Exception as e:
-        logger.info(f"[TEST] async_to_sync caught exception\n{e}")
-    logger.info("[TEST] async_to_sync(channel_layer.group_send)")
 
     asyncio.run(
         send_websocket_message(
