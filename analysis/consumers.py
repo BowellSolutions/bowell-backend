@@ -18,7 +18,7 @@ class DashboardConsumer(AsyncJsonWebsocketConsumer):
 
         await self.accept()
 
-        self.user_group_name = f"user"  # TODO: parameterize this
+        self.user_group_name = f"user-{current_user.id}"
 
         # create group with single user
         await self.channel_layer.group_add(

@@ -2,12 +2,15 @@ import asyncio
 import random
 
 import requests
+from celery import Task
 from celery.utils.log import get_task_logger
 from channels.layers import get_channel_layer
 from django.conf import settings
 
 from analysis.celery import app
+from examinations.models import Examination
 from recordings.models import Recording
+from recordings.serializers import RecordingAfterAnalysisSerializer
 
 logger = get_task_logger(__name__)
 
@@ -82,17 +85,52 @@ async def send_websocket_message(group_name: str, message: dict):
     logger.debug(f"sent message via channel_layer")
 
 
-@app.task(bind=True)
-def process_recording(self, recording_id: int, file_path: str):
+class BaseTask(Task):
+    def run(self, *args, **kwargs):
+        super().run(*args, **kwargs)
+
+    def on_success(self, retval, task_id, args, kwargs):
+        recording_id, _, user_id = args
+        asyncio.run(
+            send_websocket_message(
+                group_name=f"user-{user_id}",
+                message={
+                    "type": "echo",
+                    "payload": f"analysis complete"
+                }
+            )
+        )
+        return super().on_success(retval, task_id, args, kwargs)
+
+    def on_failure(self, exc, task_id, args, kwargs, einfo):
+        recording_id, _, user_id = args
+        asyncio.run(
+            send_websocket_message(
+                group_name=f"user-{user_id}",
+                message={
+                    "type": "echo",
+                    "payload": f"analysis of recording {recording_id} failed!"
+                }
+            )
+        )
+        return super().on_failure(exc, task_id, args, kwargs, einfo)
+
+
+@app.task(bind=True, base=BaseTask)
+def process_recording(self, recording_id: int, file_path: str, user_id: int):
     logger.info(f"started processing of Recording ID={recording_id}")
 
     # https://docs.celeryproject.org/en/stable/userguide/tasks.html#id7
     req = self.request  # task details
 
-    # TODO: parameterize group_name
+    # attach task_id to examination
+    examination = Examination.objects.get(recording__id=recording_id)
+    examination.analysis_id = req.id
+    examination.save(update_fields=['analysis_id'])
+
     asyncio.run(
         send_websocket_message(
-            group_name="user",
+            group_name=f"user-{user_id}",
             message={
                 "type": "echo",
                 "payload": f"started processing of recording with id: {recording_id}"
@@ -118,32 +156,13 @@ def process_recording(self, recording_id: int, file_path: str):
             **response["statistics"]["Main results"],
             "probability_plot": response["frames"]
         }
-
-        recording = Recording.objects.filter(id=recording_id).update(**data)
-
-        logger.info("successfully updated recording")
-        asyncio.run(
-            send_websocket_message(
-                group_name="user",
-                message={
-                    "type": "echo",
-                    "payload": "analysis complete!"
-                }
-            )
-        )
     else:
         data = call_model(file_path)
-        recording = Recording.objects.filter(id=recording_id).update(**data)
-        asyncio.run(
-            send_websocket_message(
-                group_name="user",
-                message={
-                    "type": "echo",
-                    "payload": "analysis complete!"
-                }
-            )
-        )
-    return recording
+
+    Recording.objects.filter(id=recording_id).update(**data)
+
+    logger.info(f"successfully updated recording {recording_id}")
+    return RecordingAfterAnalysisSerializer(Recording.objects.get(id=recording_id)).data
 
 
 def call_model(file_path: str):

@@ -7,17 +7,22 @@ and serializers, based on taken actions.
 """
 from datetime import timedelta
 
+from celery.result import AsyncResult
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK, HTTP_403_FORBIDDEN
+from rest_framework.serializers import Serializer
+from rest_framework.status import HTTP_200_OK, HTTP_403_FORBIDDEN, HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
 
+from analysis.swagger import InferenceResponseSerializer
+from analysis.tasks import process_recording
 from .models import Examination
 from .serializers import ExaminationSerializer, ExaminationCreateSerializer, ExaminationUpdateSerializer
 from .swagger import DoctorStatisticsResponse
@@ -57,7 +62,48 @@ class ExaminationViewSet(
             return ExaminationCreateSerializer
         elif hasattr(self, 'action') and self.action in ('update', 'partial_update'):
             return ExaminationUpdateSerializer
+        elif hasattr(self, 'action') and self.action == "inference":
+            return Serializer   # empty serializer
         return super().get_serializer_class()
+
+    @swagger_auto_schema(method="GET", responses={
+        HTTP_200_OK: openapi.Response('Checked task state', InferenceResponseSerializer),
+        HTTP_403_FORBIDDEN: openapi.Response('Permission denied!')
+    })
+    @swagger_auto_schema(method="POST", responses={
+        HTTP_200_OK: openapi.Response('Analysis has been started'),
+        HTTP_403_FORBIDDEN: openapi.Response('Permission denied!')
+    })
+    @action(detail=True, methods=['GET', 'POST'])
+    def inference(self, request, *args, **kwargs):
+        examination: Examination = self.get_object()
+        recording = examination.recording
+
+        # check if user is a doctor and if examination belongs to them and if there is recording attached
+        if request.user.type != User.Types.DOCTOR or examination.doctor != request.user or not recording:
+            return Response({"message": "Permission denied!"}, status=HTTP_403_FORBIDDEN)
+
+        if request.method == "POST":
+            # run celery task
+            task = process_recording.delay(recording.id, recording.file.path, request.user.id)
+            return Response(
+                {"message": f"Analysis of Recording ({recording.id}) has been started!", "task_id": task.id},
+                status=HTTP_200_OK
+            )
+        else:
+            task_id = examination.analysis_id
+            if not task_id:
+                return Response(
+                    {"message": f"This examination does not have analysis_id set!"}, status=HTTP_400_BAD_REQUEST
+                )
+
+            # check task status in celery backend
+            task = AsyncResult(task_id)
+            result = task.result if task.status == "SUCCESS" else None
+
+            return Response(
+                {"task_id": task.task_id, "status": task.status, "result": result}, status=HTTP_200_OK
+            )
 
 
 class GetDoctorStatistics(APIView):
