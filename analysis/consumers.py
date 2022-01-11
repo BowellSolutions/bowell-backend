@@ -17,6 +17,7 @@ class DashboardConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         # do not allow unauthorized users
         if not (current_user := self.scope.get('user')) or current_user.is_anonymous:
+            logger.warning(f"Dashboard Consumer - Unauthorized user tried to connect")
             return
 
         self.user_group_name = f"user-{current_user.id}"

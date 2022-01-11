@@ -146,6 +146,22 @@ def process_recording(self, recording_id: int, file_path: str, user_id: int):
     examination.status = Examination.Statuses.file_processing
     examination.save(update_fields=['analysis_id', 'status'])
 
+    loop = asyncio.get_event_loop()
+    loop.create_task(send_websocket_message(
+        group_name=f"user-{user_id}",
+        message={
+            "type": "notify",
+            "message": f"TEST MESSAGE 1"
+        }
+    ))
+    loop.run_until_complete(send_websocket_message(
+        group_name=f"user-{user_id}",
+        message={
+            "type": "notify",
+            "message": f"TEST MESSAGE 2"
+        }
+    ))
+
     asyncio.run(
         send_websocket_message(
             group_name=f"user-{user_id}",
