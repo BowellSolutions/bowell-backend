@@ -15,11 +15,15 @@ from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK, HTTP_403_FORBIDDEN
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_403_FORBIDDEN
 from rest_framework.views import APIView
 
 from .models import Examination
-from .serializers import ExaminationSerializer, ExaminationCreateSerializer, ExaminationUpdateSerializer
+from .serializers import (
+    ExaminationSerializer,
+    ExaminationCreateSerializer,
+    ExaminationUpdateSerializer
+)
 from .swagger import DoctorStatisticsResponse
 
 User = get_user_model()
@@ -58,6 +62,24 @@ class ExaminationViewSet(
         elif hasattr(self, 'action') and self.action in ('update', 'partial_update'):
             return ExaminationUpdateSerializer
         return super().get_serializer_class()
+
+    @swagger_auto_schema(responses={
+        HTTP_201_CREATED: openapi.Response('OK', ExaminationSerializer)}
+    )
+    def create(self, request: Request, *args, **kwargs) -> Response:
+        return super().create(request, *args, **kwargs)
+
+    @swagger_auto_schema(responses={
+        HTTP_200_OK: openapi.Response('OK', ExaminationSerializer)}
+    )
+    def update(self, request: Request, *args, **kwargs) -> Response:
+        return super().partial_update(request, *args, **kwargs)
+
+    @swagger_auto_schema(responses={
+        HTTP_200_OK: openapi.Response('OK', ExaminationSerializer)}
+    )
+    def partial_update(self, request: Request, *args, **kwargs) -> Response:
+        return super().partial_update(request, *args, **kwargs)
 
 
 class GetDoctorStatistics(APIView):
