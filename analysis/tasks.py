@@ -2,6 +2,7 @@ import asyncio
 import random
 
 import requests
+from asgiref.sync import async_to_sync
 from celery import Task
 from celery.utils.log import get_task_logger
 from channels.layers import get_channel_layer
@@ -141,6 +142,17 @@ def process_recording(self, recording_id: int, file_path: str, user_id: int):
     examination.status = Examination.Statuses.file_processing
     examination.save(update_fields=['analysis_id', 'status'])
 
+    channel_layer = get_channel_layer()
+    logger.info("[TEST] channel_layer = ", channel_layer)
+    try:
+        async_to_sync(channel_layer.group_send)(f"user-{user_id}", {
+            "type": "notify",
+            "message": f"Started processing of recording with id: {recording_id}"
+        })
+    except Exception as e:
+        logger.info(f"[TEST] async_to_sync caught exception\n{e}")
+    logger.info("[TEST] async_to_sync(channel_layer.group_send)")
+
     asyncio.run(
         send_websocket_message(
             group_name=f"user-{user_id}",
@@ -178,7 +190,7 @@ def process_recording(self, recording_id: int, file_path: str, user_id: int):
     return RecordingAfterAnalysisSerializer(Recording.objects.get(id=recording_id)).data
 
 
-def call_model(file_path: str, user_id: int):
+def call_model(file_path: str, user_id: str):
     url = f"{settings.CELERY_MODEL_URL}/inference"
     print(f"FILE path: {file_path}")
     files = [
