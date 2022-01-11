@@ -54,12 +54,12 @@ class RecordingCreateSerializer(serializers.ModelSerializer):
             validated_data['uploader'] = self._user
             instance = super().create(validated_data)
             examination.recording = instance
+            examination.status = Examination.Statuses.file_uploaded
             examination.save()
         return instance
 
     class Meta:
         model = Recording
-
         fields = ('file', 'name', 'examination')
 
 

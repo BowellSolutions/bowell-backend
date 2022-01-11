@@ -9,6 +9,7 @@ from django.conf import settings
 
 from analysis.celery import app
 from examinations.models import Examination
+from examinations.serializers import ExaminationSerializer
 from recordings.models import Recording
 from recordings.serializers import RecordingAfterAnalysisSerializer
 
@@ -91,12 +92,17 @@ class BaseTask(Task):
 
     def on_success(self, retval, task_id, args, kwargs):
         recording_id, _, user_id = args
+        ex = Examination.objects.filter(recording__id=recording_id)
+        ex.update(status=Examination.Statuses.processing_succeeded)
+        serialized = ExaminationSerializer(ex.first()).data
+
         asyncio.run(
             send_websocket_message(
                 group_name=f"user-{user_id}",
                 message={
-                    "type": "echo",
-                    "payload": f"analysis complete"
+                    "type": "update_examination",
+                    "message": f"Analysis of recording {recording_id} completed!",
+                    "payload": serialized
                 }
             )
         )
@@ -104,12 +110,18 @@ class BaseTask(Task):
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         recording_id, _, user_id = args
+        # set status to processing_failed
+        ex = Examination.objects.filter(recording__id=recording_id)
+        ex.update(status=Examination.Statuses.processing_failed)
+        serialized = ExaminationSerializer(ex.first()).data
+        # send ws message that analysis failed
         asyncio.run(
             send_websocket_message(
                 group_name=f"user-{user_id}",
                 message={
-                    "type": "echo",
-                    "payload": f"analysis of recording {recording_id} failed!"
+                    "type": "update_examination",
+                    "message": f"Analysis of recording {recording_id} failed!",
+                    "payload": serialized
                 }
             )
         )
@@ -126,28 +138,29 @@ def process_recording(self, recording_id: int, file_path: str, user_id: int):
     # attach task_id to examination
     examination = Examination.objects.get(recording__id=recording_id)
     examination.analysis_id = req.id
-    examination.save(update_fields=['analysis_id'])
+    examination.status = Examination.Statuses.file_processing
+    examination.save(update_fields=['analysis_id', 'status'])
 
     asyncio.run(
         send_websocket_message(
             group_name=f"user-{user_id}",
             message={
-                "type": "echo",
-                "payload": f"started processing of recording with id: {recording_id}"
+                "type": "notify",
+                "message": f"Started processing of recording with id: {recording_id}"
             }
         )
     )
 
     if settings.CELERY_USE_MOCK_MODEL:
         response = call_mock()
-        logger.info("received response from ml model")
+        logger.info("Received response from ml model")
 
         asyncio.run(
             send_websocket_message(
                 group_name="user",
                 message={
-                    "type": "echo",
-                    "payload": "received response from model"
+                    "type": "notify",
+                    "message": "Received response from model"
                 }
             )
         )
@@ -161,7 +174,7 @@ def process_recording(self, recording_id: int, file_path: str, user_id: int):
 
     Recording.objects.filter(id=recording_id).update(**data)
 
-    logger.info(f"successfully updated recording {recording_id}")
+    logger.info(f"Successfully updated recording {recording_id}")
     return RecordingAfterAnalysisSerializer(Recording.objects.get(id=recording_id)).data
 
 
@@ -171,17 +184,17 @@ def call_model(file_path: str):
     files = [
         ('file', open(file_path, 'rb'))
     ]
-    logger.info("sending request to ml model")
+    logger.info("Sending request to ml model")
 
     response = requests.request("POST", url, files=files)
 
-    logger.info(f"received response from ml model, status {response.status_code}")
+    logger.info(f"Received response from ml model, status {response.status_code}")
     asyncio.run(
         send_websocket_message(
             group_name="user",
             message={
-                "type": "echo",
-                "payload": "received response from model"
+                "type": "notify",
+                "message": "Received response from model"
             }
         )
     )
