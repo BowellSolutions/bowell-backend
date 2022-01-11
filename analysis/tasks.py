@@ -157,7 +157,7 @@ def process_recording(self, recording_id: int, file_path: str, user_id: int):
 
         asyncio.run(
             send_websocket_message(
-                group_name="user",
+                group_name=f"user-{user_id}",
                 message={
                     "type": "notify",
                     "message": "Received response from model"
@@ -170,7 +170,7 @@ def process_recording(self, recording_id: int, file_path: str, user_id: int):
             "probability_plot": response["frames"]
         }
     else:
-        data = call_model(file_path)
+        data = call_model(file_path, user_id)
 
     Recording.objects.filter(id=recording_id).update(**data)
 
@@ -178,7 +178,7 @@ def process_recording(self, recording_id: int, file_path: str, user_id: int):
     return RecordingAfterAnalysisSerializer(Recording.objects.get(id=recording_id)).data
 
 
-def call_model(file_path: str):
+def call_model(file_path: str, user_id: int):
     url = f"{settings.CELERY_MODEL_URL}/inference"
     print(f"FILE path: {file_path}")
     files = [
@@ -191,7 +191,7 @@ def call_model(file_path: str):
     logger.info(f"Received response from ml model, status {response.status_code}")
     asyncio.run(
         send_websocket_message(
-            group_name="user",
+            group_name=f"user-{user_id}",
             message={
                 "type": "notify",
                 "message": "Received response from model"
