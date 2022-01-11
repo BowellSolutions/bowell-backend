@@ -15,6 +15,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
+from examinations.models import Examination
 from .models import Recording
 from .serializers import (
     ListRecordingsBeforeAnalysisSerializer,
@@ -75,7 +76,9 @@ class RecordingViewSet(
         if examination_qs.exists():
             examination = examination_qs.first()
             examination.recording = None
-            examination.save(update_fields=['recording'])
+            examination.analysis_id = None
+            examination.status = Examination.Statuses.scheduled
+            examination.save(update_fields=['recording', 'analysis_id'])
             return Response(
                 {'message': 'Recording was successfully detached from examination.'},
                 status=status.HTTP_204_NO_CONTENT

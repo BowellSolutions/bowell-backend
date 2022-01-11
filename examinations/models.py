@@ -21,6 +21,7 @@ def examination_date_validator(value):
     if value < current_date:
         raise ValidationError('Invalid date! Examination date cannot be in the past.')
 
+
 class Examination(models.Model):
     class Statuses(models.TextChoices):
         cancelled = "cancelled", "cancelled"
@@ -56,10 +57,11 @@ class Examination(models.Model):
     symptoms = models.TextField(blank=True, null=True)
     medication = models.TextField(blank=True, null=True)
 
+    # celery task id
+    analysis_id = models.CharField(max_length=36, blank=True, null=True)
+
     class Meta:
         db_table = 'examinations'
 
     def __str__(self):
         return f"Examination {self.id}: {self.status}"
-
-

@@ -42,7 +42,7 @@ class ExaminationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Examination
         fields = ('id', 'patient', 'height_cm', 'mass_kg', 'symptoms', 'medication',
-                  'doctor', 'status', 'recording', 'date', 'overview')
+                  'doctor', 'status', 'recording', 'date', 'overview', 'analysis_id')
 
 
 class ExaminationCreateSerializer(serializers.ModelSerializer):
@@ -87,4 +87,15 @@ class ExaminationDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Examination
-        fields = ('id', 'patient', 'height_cm', 'mass_kg', 'symptoms', 'medication', 'status', 'date', 'overview')
+        fields = (
+            'id',
+            'patient',
+            'height_cm',
+            'mass_kg',
+            'symptoms',
+            'medication',
+            'status',
+            'date',
+            'overview',
+            'analysis_id',
+        )
