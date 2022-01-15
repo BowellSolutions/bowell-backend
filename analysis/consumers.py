@@ -33,7 +33,7 @@ class DashboardConsumer(AsyncJsonWebsocketConsumer):
         # send greeting to user after accepting incoming socket (example - remove later)
         await self.channel_layer.group_send(
             group=self.user_group_name,
-            message={"type": "hello", "message": "Hello from websocket world!"}
+            message={"type": "hello", "message": "Connection with real-time analysis service established!"}
         )
 
     async def receive_json(self, content, **kwargs):
