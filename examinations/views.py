@@ -1,9 +1,12 @@
 """
-author: Hubert Decyusz
-description: File consists of viewset definition
-used for correct data flow input and output by
-mapping usage of correct endpoints, http methods
-and serializers, based on taken actions.
+authors: Hubert Decyusz, Wojciech Nowicki, Adam Lisichin
+
+description: File consists of viewset definition used for correct data flow input and output by
+mapping usage of correct endpoints, http methods and serializers, based on taken actions.
+
+Defined views and viewsets:
+    - ExaminationViewSet - examination CRUD
+    - GetDoctorStatistics - doctor statistics
 """
 from datetime import timedelta
 

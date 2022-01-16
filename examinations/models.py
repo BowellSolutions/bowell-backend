@@ -1,9 +1,12 @@
 """
 author: Hubert Decyusz
-description: File contains model description
-of Examination class including relations,
-attribute types and constraints which are
-reflected in database table.
+
+description: File contains model description of Examination class including relations,
+attribute types and constraints which are reflected in database table, and examination_date_validator used
+by the model itself.
+
+models:
+    - Examination
 """
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator

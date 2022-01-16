@@ -1,3 +1,11 @@
+"""
+author: Adam Lisichin
+
+description: File consists of serializers definition used only for swagger documentation.
+
+serializers:
+    - DoctorStatisticsResponse
+"""
 from rest_framework import serializers
 
 

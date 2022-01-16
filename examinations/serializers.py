@@ -1,20 +1,17 @@
 """
 author: Hubert Decyusz
-description: File consists of serializers definition
-used for correct data flow by using correct attributes
-from Examination model which can be used to perform
-different operations on particular object.
 
-Used serializers:
+description: File consists of serializers definition used for correct data flow by using correct attributes
+from Examination model which can be used to perform different operations on particular object.
 
-UserInfoSerializer - patient/doctor info
-RecordingInExaminationSerializer - recording info
-ExaminationSerializer - list of examinations
-ExaminationCreateSerializer - Examination object creation
-ExaminationUpdateSerializer - Examination object update
-ExaminationDetailSerializer - full examination info
+serializers:
+    - UserInfoSerializer - patient/doctor info
+    - RecordingInExaminationSerializer - recording info
+    - ExaminationSerializer - list of examinations
+    - ExaminationCreateSerializer - Examination object creation
+    - ExaminationUpdateSerializer - Examination object update
+    - ExaminationDetailSerializer - full examination info
 """
-
 from rest_framework import serializers
 from .models import Examination, Recording
 from django.contrib.auth import get_user_model
