@@ -1,9 +1,12 @@
 """
 author: Wojciech Nowicki
-description: File registers api endpoints
-for model methods usage.
-"""
 
+description: File registers api endpoints
+
+endpoints:
+    - /api/recordings/
+    - /api/recordings/<id>/
+"""
 from rest_framework.routers import SimpleRouter
 from .views import RecordingViewSet
 

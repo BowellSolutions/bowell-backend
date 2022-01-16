@@ -1,9 +1,8 @@
 """
 author: Wojciech Nowicki, Hubert Decyusz
-description: File contains tests used for
-recordings app testing.
-"""
 
+description: File contains tests used for recordings app testing.
+"""
 import os
 import shutil
 from pathlib import Path

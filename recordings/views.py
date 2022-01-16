@@ -1,9 +1,11 @@
 """
 author: Wojciech Nowicki
-description: File consists of viewset definition
-used for correct data flow input and output by
-mapping usage of correct endpoints, http methods
-and serializers, based on taken actions.
+
+description: File consists of viewset definition used for correct data flow input and output by
+mapping usage of correct endpoints, http methods and serializers, based on taken actions.
+
+views and viewsets:
+    - RecordingViewSet - recordings CRUD
 """
 from django.contrib.auth import get_user_model
 from django.db.models import QuerySet

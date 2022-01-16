@@ -1,20 +1,17 @@
 """
 author: Hubert Decyusz
-description: File consists of serializers definition
-used for correct data flow by using correct attributes
-from Recording model which can be used to perform
-different operations on particular object.
 
-Used custom serializer fields:
+description: File consists of serializers definition used for correct data flow by using correct attributes
+from Recording model which can be used to perform different operations on particular object.
 
-ExaminationsFilteredPrimaryKeyRelatedField - logged user related examinations
+custom serializer fields:
+    - ExaminationsFilteredPrimaryKeyRelatedField - logged user related examinations
 
-Used serializers:
-
-RecordingCreateSerializer - recording creation
-RecordingAfterAnalysisSerializer - full recording model definition also used for update
-RecordingBeforeAnalysisSerializer - quick summary of object
-ListRecordingsBeforeAnalysisSerializer - list of uploaded recordings
+serializers:
+    - RecordingCreateSerializer - recording creation
+    - RecordingAfterAnalysisSerializer - full recording model definition also used for update
+    - RecordingBeforeAnalysisSerializer - quick summary of object
+    - ListRecordingsBeforeAnalysisSerializer - list of uploaded recordings
 """
 
 from rest_framework import serializers
@@ -25,6 +22,8 @@ from .models import Recording
 
 
 class ExaminationsFilteredPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
+    """PrimaryKeyRelatedField with queryset filtered by current doctor"""
+
     def get_queryset(self):
         request = self.context.get('request', None)
         queryset = super(ExaminationsFilteredPrimaryKeyRelatedField, self).get_queryset()
@@ -34,6 +33,7 @@ class ExaminationsFilteredPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedFi
 
 
 class RecordingCreateSerializer(serializers.ModelSerializer):
+    """Serializer used for creating new recording"""
     examination = ExaminationsFilteredPrimaryKeyRelatedField(queryset=Examination.objects)
 
     @property
@@ -64,6 +64,7 @@ class RecordingCreateSerializer(serializers.ModelSerializer):
 
 
 class RecordingAfterAnalysisSerializer(serializers.ModelSerializer):
+    """Serializer for recording representation and updates"""
     uploader = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
@@ -72,15 +73,9 @@ class RecordingAfterAnalysisSerializer(serializers.ModelSerializer):
 
 
 class RecordingBeforeAnalysisSerializer(serializers.ModelSerializer):
+    """Serializer for recording representation before analysis"""
     examination = serializers.SerializerMethodField('get_examinations')
 
-    @property
-    def _user(self):
-        request = self.context.get('request', None)
-        if request:
-            return request.user
-
-    # todo return if examination does not exists
     def get_examinations(self, obj):
         return ExaminationDetailSerializer(obj.examination_set.first()).data
 
@@ -90,13 +85,8 @@ class RecordingBeforeAnalysisSerializer(serializers.ModelSerializer):
 
 
 class ListRecordingsBeforeAnalysisSerializer(serializers.ModelSerializer):
+    """Serializer for recording representation in list method"""
     examination = serializers.SerializerMethodField('get_examinations')
-
-    @property
-    def _user(self):
-        request = self.context.get('request', None)
-        if request:
-            return request.user
 
     def get_examinations(self, obj):
         if obj.examination_set.first():
