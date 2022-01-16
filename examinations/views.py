@@ -20,7 +20,7 @@ from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 from rest_framework.status import (
     HTTP_200_OK, HTTP_201_CREATED,
-    HTTP_403_FORBIDDEN, HTTP_400_BAD_REQUEST
+    HTTP_400_BAD_REQUEST, HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 )
 from rest_framework.views import APIView
 
@@ -98,11 +98,15 @@ class ExaminationViewSet(
         examination: Examination = self.get_object()
         recording = examination.recording
 
-        # check if user is a doctor and if examination belongs to them and if there is recording attached
-        if request.user.type != User.Types.DOCTOR or examination.doctor != request.user or not recording:
-            return Response({"message": "Permission denied!"}, status=HTTP_403_FORBIDDEN)
+        # check if there is recording attached
+        if not recording:
+            return Response({"message": "Permission denied!"}, status=HTTP_404_NOT_FOUND)
 
         if request.method == "POST":
+            # check if user is a doctor and if examination belongs to them - only doctor can start inference
+            if request.user.type != User.Types.DOCTOR or examination.doctor != request.user:
+                return Response({"message": "Permission denied!"}, status=HTTP_403_FORBIDDEN)
+
             # run celery task
             task = process_recording.delay(recording.id, recording.file.path, request.user.id)
             return Response(
@@ -110,6 +114,10 @@ class ExaminationViewSet(
                 status=HTTP_200_OK
             )
         else:
+            # check if user is either doctor or patient in this examination
+            if examination.doctor != request.user and examination.patient != request.user:
+                return Response({"message": "Permission denied!"}, status=HTTP_403_FORBIDDEN)
+
             task_id = examination.analysis_id
             if not task_id:
                 return Response(
