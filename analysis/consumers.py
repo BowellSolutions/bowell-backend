@@ -1,3 +1,8 @@
+"""
+author: Adam Lisichin
+
+description: Exports DashboardConsumer which handles websocket message in ws/users/<user_code> routes.
+"""
 import logging
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer

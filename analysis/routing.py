@@ -1,3 +1,8 @@
+"""
+author: Adam Lisichin
+
+description: Setup of websocket routing. Dashboard consumer is mapped to ws/users/<user_code>/ route.
+"""
 from django.urls import re_path
 
 from .consumers import DashboardConsumer
