@@ -1,3 +1,11 @@
+"""
+author: Adam Lisichin
+
+description: Contains custom User model, UserManager, UserQuerySet definitions.
+
+models:
+    - User
+"""
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -8,6 +16,8 @@ from users.validators import username_validator, birth_date_validator
 
 
 class UserQuerySet(models.QuerySet):
+    """Custom queryset with filter by user type"""
+
     def staff(self) -> QuerySet['User']:
         return self.filter(type=User.Types.STAFF)
 
@@ -19,6 +29,8 @@ class UserQuerySet(models.QuerySet):
 
 
 class UserManager(BaseUserManager):
+    """Custom User Manager with overwritten create_superuser, create_user and extra filtered querysets"""
+
     def create_superuser(
         self, username: str, email: str, password: str, first_name: str = "", last_name: str = ""
     ) -> "User":
@@ -66,6 +78,8 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
+    """Custom User with extra fields (birth_date, type), object manager with filter methods, login by email"""
+
     class Types(models.TextChoices):
         STAFF = "STAFF", "STAFF"
         DOCTOR = "DOCTOR", "DOCTOR"

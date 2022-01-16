@@ -1,3 +1,8 @@
+"""
+author: Adam Lisichin
+
+description: Definition of AuthorizationHeaderMiddleware which injects access cookie from request into headers.
+"""
 from typing import Callable
 
 from rest_framework.request import Request

@@ -1,3 +1,16 @@
+"""
+author: Adam Lisichin
+
+description: Definitions of authentication and user related views.
+
+views and viewsets:
+    - JWTObtainPairView - login with credentials, access and refresh token retrieval
+    - JWTRefreshView - refreshing token
+    - JWTVerifyView - verify if token is valid
+    - JWTLogoutView - logout by removing access and refresh tokens from cookies and blacklisting refresh token
+    - UserViewSet - user CRUD
+    - GetCurrentUser - retrieving current user
+"""
 from django.contrib.auth import get_user_model
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi

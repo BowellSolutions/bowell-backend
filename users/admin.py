@@ -1,3 +1,8 @@
+"""
+author: Adam Lisichin
+
+description: File registers custom User model and its model admin with custom forms (UserModify and UserCreate forms).
+"""
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UsernameField, UserCreationForm, UserChangeForm
