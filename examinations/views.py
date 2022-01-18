@@ -13,6 +13,7 @@ from datetime import timedelta
 from celery.result import AsyncResult
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, viewsets
@@ -57,6 +58,8 @@ class ExaminationViewSet(
 
     serializer_class = ExaminationSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['doctor', 'patient']
 
     def get_queryset(self):
         if self.request.user.is_anonymous:
