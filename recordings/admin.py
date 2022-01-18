@@ -1,9 +1,8 @@
 """
 author: Wojciech Nowicki
-description: File registers Recording
-model in django content registry.
-"""
 
+description: File registers Recording model in admin interface.
+"""
 from django.contrib import admin
 from .models import Recording
 

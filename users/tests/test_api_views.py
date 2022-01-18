@@ -1,3 +1,8 @@
+"""
+author: Hubert Decyusz, Adam Lisichin
+
+description: File contains tests used for users app testing.
+"""
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model

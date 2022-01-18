@@ -1,5 +1,6 @@
 """
 author: Adam Lisichin
+
 description: File consists of serializers definition used only for swagger documentation.
 
 Views provided by drf-simplejwt are not properly processed by drf-yasg,

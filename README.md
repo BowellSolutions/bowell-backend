@@ -17,6 +17,7 @@ This setup has been tested with Python 3.9.
 
 - Django + Django Rest Framework : `django` `djangorestframework`
 - Django Channels 3 : `channels`- handling websockets backend
+- `djangorestframework-simplejwt` - JSON Web Token authentication
 - `django-cors-headers` - handling cross origin requests
 - `coverage` - for code coverage reports and running unit tests
 - `mypy` + `djangorestframework-stubs` - for better typing experience
@@ -24,8 +25,13 @@ This setup has been tested with Python 3.9.
 - `channels_redis`, `redis` - connection to Redis database service
 - `daphne` - production asgi server
 - `whitenoise` - building static files for production
-- `celery` - task queue
+- `celery` - task queue, asynchronous tasks
 - `drf-yasg` - OpenAPI documentation
+- `django-filter` - search filters integrated with chosen views
+
+## File Structure
+
+Click [here](FILES.md) to see the documentation of project's file structure.
 
 ## Development setup:
 
@@ -176,8 +182,10 @@ daphne -b 0.0.0.0 -p 8000 core.asgi:application -v2
 ```
 
 ### Deployment to Heroku:
-Heroku is used as a backup to our production server 
-and maybe will be used as a staging environment in the future.
+
+Heroku is used as a backup to our production server and maybe will be used as a staging environment in the future.
+
+**Important:** Cookie authentication will not work cross-domain and with other Heroku apps because of Heroku
 
 Environmental variables to set in Heroku application:
 

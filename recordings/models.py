@@ -1,8 +1,10 @@
 """
 author: Wojciech Nowicki
-description: File contains model description
-of Recording class. Class has no relation dependent
-attributes, only those necessary for full model definition.
+
+description: File contains model description of Recording class.
+
+models:
+    - Recording
 """
 from django.conf import settings
 from django.core.validators import FileExtensionValidator

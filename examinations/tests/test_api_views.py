@@ -1,9 +1,8 @@
 """
 author: Hubert Decyusz
-description: File contains tests used for
-examinations app testing.
-"""
 
+description: File contains tests used for examinations app testing.
+"""
 import os
 import shutil
 from datetime import timedelta

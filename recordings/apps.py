@@ -1,10 +1,8 @@
 """
-author: Wojciech Nowicki
-description: File describes properties
-of model for database table reflection which are
-primary key and used table name.
-"""
+Created automatically by Django CLI.
 
+description: Recordings application config.
+"""
 from django.apps import AppConfig
 
 

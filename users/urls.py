@@ -1,3 +1,17 @@
+"""
+author: Adam Lisichin
+
+description: File registers api endpoints
+
+endpoints:
+    - /api/auth/token/
+    - /api/auth/token/refresh/
+    - /api/auth/token/verify/
+    - /api/auth/logout/
+    - /api/users/
+    - /api/users/<id>/
+    - /api/users/me/
+"""
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 

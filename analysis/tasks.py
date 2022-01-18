@@ -1,8 +1,20 @@
+"""
+authors: Adam Lisichin, Gustaw Daczkowski
+
+description: Contains Celery task definitions and utilities.
+
+File consists of:
+    - mapper - mapping ML model response fields to Recording model fields
+    - model_mock, call_mock - mocked model response
+    - send_websocket_message - utility function for sending ws message via channel_layer
+    - BaseTask - Celery Task base class with on_failure, on_success implementation
+    - process_recording - Our main Celery task
+    - call_model - utility function for performing HTTP POST request to ML model API in Docker container
+"""
 import asyncio
 import random
 
 import requests
-from asgiref.sync import async_to_sync
 from celery import Task
 from celery.utils.log import get_task_logger
 from channels.layers import get_channel_layer
@@ -17,6 +29,8 @@ from recordings.serializers import RecordingAfterAnalysisSerializer
 logger = get_task_logger(__name__)
 
 mapper = {
+    # Recording model fields are incompatible with fields returned in ML model response,
+    # hence mapping is needed
     "% of bowel sounds followed by another bowel sound within 100 ms": "repetition_within_100ms",
     "% of bowel sounds followed by another bowel sound within 200 ms": "repetition_within_200ms",
     "% of bowel sounds followed by another bowel sound within 50 ms": "repetition_within_50ms",
@@ -80,7 +94,13 @@ model_mock = {
 
 
 async def send_websocket_message(group_name: str, message: dict):
-    """Sends websocket message via channel_layer"""
+    """
+    Sends websocket message via channel_layer. Logs debug and warning messages to console.
+
+    :param group_name: Dashboard consumer group_name to which message will be sent
+    :param message: Dictionary with type, message (and optional payload)
+    :return: Coroutine
+    """
 
     channel_layer = get_channel_layer()
     logger.debug(f"trying to send message via channel_layer.group_send")
@@ -93,6 +113,11 @@ async def send_websocket_message(group_name: str, message: dict):
 
 
 class BaseTask(Task):
+    """
+    Celery Task with overwritten on_success, on_failure methods.
+    Those methods handle saving examination and sending websocket messages after the task has been executed.
+    """
+
     def run(self, *args, **kwargs):
         super().run(*args, **kwargs)
 
@@ -136,6 +161,17 @@ class BaseTask(Task):
 
 @app.task(bind=True, base=BaseTask)
 def process_recording(self, recording_id: int, file_path: str, user_id: int):
+    """
+    Celery task which sends request to Machine Learning model,
+    updates proper Examination and Recording instances,
+    logs to console and sends websocket messages to users.
+
+    :param self: Attributes and methods on the task type instance
+    :param recording_id: ID of the analyzed recording
+    :param file_path: Path to file of the analyzed recording
+    :param user_id: ID of the doctor who initiated the analysis
+    :return: Recording after updates serialized to JSON
+    """
     logger.info(f"started processing of Recording ID={recording_id}")
 
     # https://docs.celeryproject.org/en/stable/userguide/tasks.html#id7
@@ -185,6 +221,14 @@ def process_recording(self, recording_id: int, file_path: str, user_id: int):
 
 
 def call_model(file_path: str, user_id: int):
+    """
+    Sends POST request to Machine Learning model API which runs in Docker container.
+    Also logs to console and sends websocket messages via channel_layer.
+    :param file_path: Path to file of the analyzed recording
+    :param user_id: ID of the doctor who initiated the analysis
+    :return: Data returned in response mapped to Recording model fields.
+    """
+
     url = f"{settings.CELERY_MODEL_URL}/inference"
     print(f"FILE path: {file_path}")
     files = [
@@ -215,6 +259,8 @@ def call_model(file_path: str, user_id: int):
 
 
 def call_mock():
+    """Returns random, mocked data shaped like an actual response"""
+
     # mocked frames used for probability plot
     frames = [{"start": round(i / 1000, 2), "probability": random.random()} for i in range(0, 1000, 1)]
     # shape of actual model response

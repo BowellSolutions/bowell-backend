@@ -1,6 +1,11 @@
 """
 author: Adam Lisichin
+
 description: File consists of validators' definitions used in models.py.
+
+validators:
+    - username_validator
+    - birth_date_validator
 """
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError

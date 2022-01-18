@@ -1,3 +1,8 @@
+"""
+author: Adam Lisichin
+
+description: File contains tests used for analysis app testing.
+"""
 from unittest import skip
 
 from django.core.files.uploadedfile import SimpleUploadedFile

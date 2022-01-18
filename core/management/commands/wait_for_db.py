@@ -1,3 +1,10 @@
+"""
+author: Adam Lisichin
+
+description: Custom command which ensures that connection with a database has been established.
+
+usage: python manage.py wait_for_db
+"""
 import time
 from django.db import connections
 from django.db.utils import OperationalError

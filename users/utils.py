@@ -1,3 +1,11 @@
+"""
+author: Adam Lisichin
+
+description: Contains utility functions such as:
+    - get_tokens_for_user
+    - get_set_cookie_arguments
+    - get_delete_cookie_arguments
+"""
 from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
 

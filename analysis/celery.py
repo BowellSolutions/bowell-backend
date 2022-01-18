@@ -1,3 +1,8 @@
+"""
+author: Gustaw Daczkowski
+
+description: Celery application setup.
+"""
 import os
 
 from celery import Celery
