@@ -28,6 +28,8 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UsernameField, UserCreationForm, UserChangeForm
 from django.forms import EmailField
 from django.utils.translation import gettext_lazy as _
+from rest_framework_simplejwt.token_blacklist.admin import OutstandingTokenAdmin as BaseOutstandingTokenAdmin
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 
 from users.models import User
 
@@ -91,4 +93,15 @@ class UserAdmin(BaseUserAdmin):
     add_form = UserCreationForm
 
 
+class OutstandingTokenAdmin(BaseOutstandingTokenAdmin):
+    """Overrides simple_jwt's token admin, so that deleting users is possible."""
+
+    def has_delete_permission(self, *args, **kwargs) -> bool:
+        return True
+
+
 admin.site.register(User, UserAdmin)
+
+# unregister model and later register it with a new admin
+admin.site.unregister(OutstandingToken)
+admin.site.register(OutstandingToken, OutstandingTokenAdmin)
