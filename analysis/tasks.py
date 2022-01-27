@@ -19,6 +19,7 @@ from celery import Task
 from celery.utils.log import get_task_logger
 from channels.layers import get_channel_layer
 from django.conf import settings
+from django.utils import timezone
 
 from analysis.celery import app
 from examinations.models import Examination
@@ -214,7 +215,7 @@ def process_recording(self, recording_id: int, file_path: str, user_id: int):
     else:
         data = call_model(file_path, user_id)
 
-    Recording.objects.filter(id=recording_id).update(**data)
+    Recording.objects.filter(id=recording_id).update(**data, latest_analysis_date=timezone.now())
 
     logger.info(f"Successfully updated recording {recording_id}")
     return RecordingAfterAnalysisSerializer(Recording.objects.get(id=recording_id)).data
