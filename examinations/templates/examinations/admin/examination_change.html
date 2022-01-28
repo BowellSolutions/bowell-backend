@@ -1,0 +1,33 @@
+{% extends "admin/change_form.html" %}
+
+{% block submit_buttons_bottom %}
+  {% if original.recording %}
+    <style>
+      .custom-row {
+        display: flex;
+        align-items: center;
+      }
+
+      .custom-row .custom-row-text {
+        cursor: default;
+        font-weight: bold;
+      }
+
+      .custom-row input {
+        background-color: #38A169;
+      }
+
+      .custom-row input:hover, .custom-row input:focus {
+        background-color: #276749;
+      }
+    </style>
+
+    <div class="submit-row custom-row">
+      <span class="custom-row-text">{{ original.recording }}</span>
+      <div style="flex-grow: 1"></div>
+      <input type="submit" value="Analyze" name="run_analysis" title="Run recording analysis"/>
+    </div>
+  {% endif %}
+
+  {{ block.super }}
+{% endblock %}
