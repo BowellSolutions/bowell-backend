@@ -10,7 +10,7 @@
 </div>
 
 <div align="center" style="padding: 20px 0">
-    <img src="./docs/api.png" alt="" height="600px"/>
+    <img src="./docs/api.png" alt="" height="400px"/>
 </div>
 
 ## Tools, libraries, frameworks:
