@@ -10,3 +10,4 @@ mypy.ini
 .vscode
 .idea
 db.sqlite3
+docs
