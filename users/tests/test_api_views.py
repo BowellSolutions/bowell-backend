@@ -245,6 +245,7 @@ class TestUsersViews(TestCase):
         })
         self.assertEqual(response.status_code, HTTP_201_CREATED)
         user = User.objects.get(email="test@gmail1234.com")
+        self.assertEqual(response.json(), UserSerializer(user).data)
         self.assertEqual(user.is_active, False)
 
     def test_create_doctor_with_wrong_birth_date(self):
@@ -256,8 +257,8 @@ class TestUsersViews(TestCase):
             'birth_date': timezone.now().date() + timedelta(days=2),
             'type': User.Types.DOCTOR,
         })
-        #print(response.json())
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {'birth_date': ['Invalid date! Birth date cannot be in the future.']})
 
     def test_create_user_without_email(self):
         response = self.client.post('/api/users/', {
@@ -268,52 +269,62 @@ class TestUsersViews(TestCase):
             'type': User.Types.DOCTOR,
         })
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {'email': ['This field is required.']})
 
     def test_create_user_without_first_name(self):
         response = self.client.post('/api/users/', {
+            'email': 'niceemail@gmail.com',
             'last_name': 'abc',
             'password': 'testing1234',
             'birth_date': '2020-10-11',
             'type': User.Types.DOCTOR,
         })
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {'first_name': ['This field is required.']})
 
     def test_create_user_without_last_name(self):
         response = self.client.post('/api/users/', {
+            'email': 'niceemail@gmail.com',
             'first_name': 'abc',
             'password': 'testing1234',
             'birth_date': '2020-10-11',
             'type': User.Types.DOCTOR,
         })
+        self.assertEqual(response.json(), {'last_name': ['This field is required.']})
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
 
     def test_create_user_without_birth_date(self):
         response = self.client.post('/api/users/', {
+            'email': 'test23@gmail.com',
             'first_name': 'abc',
             'last_name': 'abc',
             'password': 'testing1234',
             'type': User.Types.DOCTOR,
         })
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {'birth_date': ['This field is required.']})
 
     def test_create_user_without_type(self):
         response = self.client.post('/api/users/', {
+            'email': 'test88@gmail.com',
             'first_name': 'abc',
             'last_name': 'abc',
             'password': 'testing1234',
             'birth_date': '2020-10-11',
         })
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {'type': ['This field is required.']})
 
     def test_create_user_without_password(self):
         response = self.client.post('/api/users/', {
-            'email': 'test@gmail.com',
+            'email': 'testtttt@gmail.com',
             'first_name': 'abc',
             'last_name': 'abc',
             'birth_date': '2020-10-11',
             'type': User.Types.DOCTOR,
         })
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {'password': ['This field is required.']})
 
     def test_list_users(self):
         self._require_jwt_cookies(self.user)
@@ -376,7 +387,7 @@ class TestUsersViews(TestCase):
         user = User.objects.get(email="test@gmail15.com")
         response = self.client.delete(f'/api/users/{user.id}/')
         self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
-        
+
     def test_users_doctor_filter(self):
         self._require_jwt_cookies(user=self.user)
         User.objects.create_user(
@@ -443,3 +454,7 @@ class TestUsersViews(TestCase):
         )
         response = self.client.get('/api/users/?type=APPLE')
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.json(),
+            {'type': ['Select a valid choice. APPLE is not one of the available choices.']}
+        )
