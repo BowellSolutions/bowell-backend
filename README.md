@@ -9,6 +9,10 @@
     <img src="https://img.shields.io/badge/Docker-008FCC?style=for-the-badge&logo=docker&logoColor=white" alt=""/>
 </div>
 
+<div align="center" style="padding: 20px 0">
+    <img src="./docs/api.png" alt="" height="400px"/>
+</div>
+
 ## Tools, libraries, frameworks:
 
 This setup has been tested with Python 3.9.
@@ -147,7 +151,7 @@ Environmental variables:
 DJANGO_SETTINGS_MODULE=core.settings.prod
 SECRET_KEY
 STATIC_ROOT     # path to dir for storing static files
-MEDIA_ROOT      # path to dir for storing recordings 
+MEDIA_ROOT      # path to dir for storing recordings
 BACKEND_HOST    # e.g example.com
 BACKEND_URL     # e.g https://api.example.domain.com
 FRONTEND_URL    # e.g https://example.domain.com

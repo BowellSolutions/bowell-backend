@@ -23,10 +23,13 @@ author: Hubert Decyusz
 
 description: File registers Examination model and its model admin with custom model form in admin interface.
 """
-from django.contrib import admin
 from django import forms
+from django.contrib import admin, messages
 from django.contrib.auth import get_user_model
+from django.http.request import HttpRequest
+from django.http.response import HttpResponse, HttpResponseRedirect
 
+from analysis.tasks import process_recording
 from .models import Examination
 
 User = get_user_model()
@@ -48,6 +51,18 @@ class ExaminationModelForm(forms.ModelForm):
 
 class ExaminationAdmin(admin.ModelAdmin):
     form = ExaminationModelForm
+    change_form_template = "examinations/admin/examination_change.html"
+
+    def response_change(self, request: HttpRequest, obj: Examination) -> HttpResponse:
+        # handle custom analyze button
+        if obj.recording is not None and "run_analysis" in request.POST:
+            # run celery task
+            task = process_recording.delay(obj.recording.id, obj.recording.file.path, request.user.id)
+            message = f"Started analysis of {obj.recording}. Task ID {task.id}"
+            # refresh page and display success message above
+            self.message_user(request, message, messages.SUCCESS)
+            return HttpResponseRedirect(".")
+        return super().response_change(request, obj)
 
 
 admin.site.register(Examination, ExaminationAdmin)
