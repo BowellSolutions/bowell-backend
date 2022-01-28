@@ -79,7 +79,7 @@ class ExaminationUpdateSerializer(serializers.ModelSerializer):
     doctor = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(type=User.Types.DOCTOR))
 
     def update(self, instance, validated_data):
-        if 'recording' in validated_data:
+        if 'recording' in validated_data and validated_data['recording'] is not None:
             # if examination already has a recording
             # or recording from request is already attached elsewhere
             if instance.recording is not None or Examination.objects.filter(
