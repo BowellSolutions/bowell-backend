@@ -43,6 +43,7 @@ class ExaminationModelForm(forms.ModelForm):
         # filter doctors and patients
         self.fields['doctor'].queryset = User.objects.doctors()
         self.fields['patient'].queryset = User.objects.patients()
+        self.fields['analysis_id'].help_text = "Celery task UUID"
 
     class Meta:
         model = Examination
@@ -50,6 +51,8 @@ class ExaminationModelForm(forms.ModelForm):
 
 
 class ExaminationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'status', 'patient', 'doctor', 'date')
+    list_filter = ('status', 'date')
     form = ExaminationModelForm
     change_form_template = "examinations/admin/examination_change.html"
 
