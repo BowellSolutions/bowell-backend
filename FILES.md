@@ -31,12 +31,20 @@ core/
         - dev.py                            # development settings
         - heroku.py                         # settings for deployment to Heroku
         - prod.py                           # production settings - deployment to Kubernetes cluster
+    - templates/                            # folder for storing templates
+        - admin/                            # custom admin interface styling
+            - base.html                     # overrides default admin theme (extends django's base html)
+        - __init__.py
     - __init__.py
     - asgi.py                               # asgi application - entrypoint to Daphne server, contains setup for http and ws protocols
     - urls.py                               # top-level definition of routing, includes admin and routes from applications
     - wsgi.py                               # wsgi application - not used
 examinations/
     - migrations/                           # migrations package
+    - templates/                            # directory for storing templates used in this app
+        - examinations/
+            - admin/                        # templates used in admin interface
+                - examination_change.html   # custom examination form
     - tests/                                # unit tests package
         - __init__.py
         - test_api_views.py                 # unit tests of endpoints, views, serializers within examinations app
