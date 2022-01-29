@@ -73,6 +73,7 @@ class UserAdmin(BaseUserAdmin):
     """Custom User Admin interface"""
 
     list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'type')
+    list_filter = ('type', 'is_staff', 'is_superuser', 'is_active')
     fieldsets = (
         (_('User details'), {'fields': ('email', 'username', 'password')}),
         (_('Personal info'), {'fields': ('first_name', 'last_name', 'birth_date', 'type')}),

@@ -1,0 +1,13 @@
+{% extends 'admin/base.html' %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+:root {
+  {# https://chakra-ui.com/docs/theming/theme #}
+  --primary: #38b2ac;
+  --secondary: #319795;
+  --link-fg: #285e61;
+  --link-selected-fg: #2c7a7b;
+}
+</style>
+{% endblock %}

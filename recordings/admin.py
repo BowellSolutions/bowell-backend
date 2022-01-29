@@ -23,7 +23,29 @@ author: Wojciech Nowicki
 
 description: File registers Recording model in admin interface.
 """
+
 from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
+
 from .models import Recording
 
-admin.site.register([Recording])
+
+class RecordingAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'examination', 'latest_analysis_date', 'uploader', 'uploaded_at')
+    list_filter = ('uploaded_at', 'latest_analysis_date')
+
+    def examination(self, obj: Recording):
+        """Adds an examination column in list_display (with a link to examination if it exists)"""
+
+        query = obj.examination_set.filter(recording=obj)
+        if query.exists():
+            _examination = query.first()
+            link = reverse("admin:examinations_examination_change", args=[_examination.id])
+            return format_html('<a href="{}" style="font-weight: bold">{}</a>', link, _examination.id)
+        return None
+
+    examination.allow_tags = True
+
+
+admin.site.register([Recording], RecordingAdmin)

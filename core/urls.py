@@ -57,6 +57,9 @@ schema_view = get_schema_view(
     permission_classes=(permissions.AllowAny,),
 )
 
+admin.site.site_title = "Bowell Admin"
+admin.site.site_header = "Bowell Admin"
+
 urlpatterns = [
     # django admin
     path('admin/', admin.site.urls),
