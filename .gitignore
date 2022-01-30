@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+#Media files
+media/recordings
+
 # Distribution / packaging
 .Python
 build/
@@ -132,3 +135,7 @@ dmypy.json
 .vscode
 /vscode
 /.idea
+
+# Django migrations
+*/migrations/*
+!*/migrations/__init__.py

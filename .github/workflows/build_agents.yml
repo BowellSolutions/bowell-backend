@@ -16,6 +16,26 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Runs a single command using the runners shell
-    - name: Send greeting
-      run: echo "Hello ${{ github.event.inputs.name }}"
+      - name: Checkout infra
+        uses: actions/checkout@v2
+        with:
+          repository: BowellSolutions/bowell-infra
+          token: ${{ secrets.GH_PAT }} 
+          path: infra
+          ref: develop          
+      - name: Login to private container registry
+        uses: docker/login-action@v1 
+        with:
+          registry: ${{ secrets.PCR_URL }}
+          username: ${{ secrets.PCR_USER_NAME }}
+          password: ${{ secrets.PCR_PASSWORD }}
+      - name: install buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v1
+        with:
+          version: latest
+      - name: build the image
+        run: |
+          docker buildx build \
+            --tag ${{ secrets.PCR_URL }}/bowelsound/build-agent:${{ github.run_id }}_${{ github.run_number }} \
+            --platform linux/amd64 --push=true --build-arg RUNNER_VERSION=${{ github.event.inputs.name }} ./infra/build-agents
